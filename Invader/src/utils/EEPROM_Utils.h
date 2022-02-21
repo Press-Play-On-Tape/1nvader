@@ -35,12 +35,12 @@ class EEPROM_Utils {
 /* ----------------------------------------------------------------------------
  *   Is the EEPROM initialised?
  *
- *   Looks for the characters 'I' and 'H' in the first two bytes of the EEPROM
+ *   Looks for the characters '1' and 'V' in the first two bytes of the EEPROM
  *   memory range starting from byte EEPROM_START.  
  */
 
-const uint8_t letter1 = 'I'; 
-const uint8_t letter2 = 'H'; 
+const uint8_t letter1 = '1'; 
+const uint8_t letter2 = 'V'; 
 
 void EEPROM_Utils::initEEPROM(bool force) {
 

@@ -12,6 +12,7 @@
 #endif
 
 Arduboy2Ext arduboy;
+ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
