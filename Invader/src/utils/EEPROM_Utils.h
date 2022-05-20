@@ -39,7 +39,7 @@ class EEPROM_Utils {
  *   memory range starting from byte EEPROM_START.  
  */
 
-const uint8_t letter1 = '1'; 
+const uint8_t letter1 = 'O'; 
 const uint8_t letter2 = 'V'; 
 
 void EEPROM_Utils::initEEPROM(bool force) {
