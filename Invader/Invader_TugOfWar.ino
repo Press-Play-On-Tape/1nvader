@@ -11,6 +11,7 @@ void tugOfWar_Init() {
     player2.reset(1);
 
     player1.setPos(45);
+    player2.setPos(45);
 
 }   
 

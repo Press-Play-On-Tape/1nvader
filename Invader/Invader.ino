@@ -48,6 +48,15 @@ void setup() {
     gameMode = EEPROM_Utils::getMode();
     gameRotation = EEPROM_Utils::getRotation();
 
+
+    // Sanity check on modes ..
+
+    if (static_cast<uint8_t>(gameMode) > 2 || static_cast<uint8_t>(gameRotation) > 1) {
+        EEPROM_Utils::initEEPROM(true);
+        gameMode = EEPROM_Utils::getMode();
+        gameRotation = EEPROM_Utils::getRotation();
+    }
+
 }   
 
 

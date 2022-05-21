@@ -14,20 +14,21 @@ void game_Init() {
 
         case GameRotation::Portrait:
 
-            if (gameMode == GameMode::Single) {
+            switch (gameMode) {
 
-                player1.setPos(26);
-                player1.setMovement(Movement::Up);
-                
-            }
-            else {
+                case GameMode::Single:
+                    player1.setPos(26);
+                    player1.setMovement(Movement::Up);
+                    break;
 
-                player1.setPlayerIdx(0);
-                player1.setPos(13);
-                player1.setMovement(Movement::Up);
+                default:
+                    player1.setPlayerIdx(0);
+                    player1.setPos(13);
+                    player1.setMovement(Movement::Up);
 
-                player2.setPos(38);
-                player2.setMovement(Movement::Down);
+                    player2.setPos(38);
+                    player2.setMovement(Movement::Down);
+                    break;
 
             }
 
@@ -35,20 +36,21 @@ void game_Init() {
 
         case GameRotation::Landscape:
 
-            if (gameMode == GameMode::Single) {
+            switch (gameMode) {
 
-                player1.setPos(59);
-                player1.setMovement(Movement::Left);
-                
-            }
-            else {
+                case GameMode::Single:
+                    player1.setPos(59);
+                    player1.setMovement(Movement::Left);
+                    break;
 
-                player1.setPlayerIdx(0);
-                player1.setPos(33);
-                player1.setMovement(Movement::Left);
+                default:
+                    player1.setPlayerIdx(0);
+                    player1.setPos(33);
+                    player1.setMovement(Movement::Left);
 
-                player2.setPos(84);
-                player2.setMovement(Movement::Right);
+                    player2.setPos(84);
+                    player2.setMovement(Movement::Right);
+                    break;
 
             }
 
@@ -69,7 +71,15 @@ void game() {
     //     bomb.setHeight(mothership.getHeight() + 6);
 
     // }
+    // if (arduboy.justPressed(DOWN_BUTTON)) {
 
+    //     if (player1.getScore() < 80)        player1.setScore(79);
+    //     else if (player1.getScore() < 160)       player1.setScore(159);
+    //     else if (player1.getScore() < 240)       player1.setScore(239);
+
+    //     mothership.setCounter(1);
+
+    // }
 
     // Randomly drop a bomb ?
 
