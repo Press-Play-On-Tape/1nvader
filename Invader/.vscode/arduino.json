@@ -1,5 +1,6 @@
 {
     "configuration": "core=arduboy-core,boot=org",
     "board": "arduboy-homemade:avr:arduboy",
-    "sketch": "Invader.ino"
+    "sketch": "Invader.ino",
+    "output": "../../build"
 }
