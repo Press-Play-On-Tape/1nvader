@@ -51,7 +51,7 @@ void EEPROM_Utils::initEEPROM(bool force) {
     byte c2 = EEPROM.read(EEPROM_START_C2);
 
     if (c1 != letter1 || c2 != letter2 || force) { 
-Serial.println("a");
+
         uint16_t hs = 0;
         uint8_t mode = static_cast<uint8_t>(GameMode::Single);
         uint8_t rotation = static_cast<uint8_t>(GameRotation::Portrait);
@@ -70,7 +70,6 @@ Serial.println("a");
 
     }
     else {
-Serial.println("b");
 
         int16_t checkSumOld = 0;
         int16_t checkSumNow = EEPROM_Utils::checkSum(false);
@@ -199,12 +198,9 @@ int16_t EEPROM_Utils::checkSum(bool update) {
     }
 
     if (update) {
-Serial.println("c");        
-
         EEPROM.put(EEPROM_CHECKSUM, checksum);
     }
 
-Serial.println("d");        
     return checksum;
 
 }
