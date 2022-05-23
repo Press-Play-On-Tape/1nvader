@@ -44,18 +44,13 @@ void setup() {
     arduboy.audio.begin();
     #endif
 
-    EEPROM_Utils::initEEPROM(false);
-    gameMode = EEPROM_Utils::getMode();
-    gameRotation = EEPROM_Utils::getRotation();
+// Serial.begin(9600);
 
-
-    // Sanity check on modes ..
-
-    if (static_cast<uint8_t>(gameMode) > 2 || static_cast<uint8_t>(gameRotation) > 1) {
-        EEPROM_Utils::initEEPROM(true);
-        gameMode = EEPROM_Utils::getMode();
-        gameRotation = EEPROM_Utils::getRotation();
-    }
+//     while (!arduboy.pressed(A_BUTTON)) {
+//        Serial.println("111"); 
+//     }
+// Serial.println("ssss");
+   EEPROM_Utils::initEEPROM(false);
 
 }   
 

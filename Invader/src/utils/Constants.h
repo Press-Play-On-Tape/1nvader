@@ -12,6 +12,19 @@
 
 namespace Constants {
 
+    constexpr uint16_t EEPROM_Start         = EEPROM_STORAGE_SPACE_START + 143;
+    constexpr uint16_t EEPROM_Start_C1      = Constants::EEPROM_Start;
+    constexpr uint16_t EEPROM_Start_C2      = Constants::EEPROM_Start + 1;
+    constexpr uint16_t EEPROM_Single        = Constants::EEPROM_Start + 2;
+    constexpr uint16_t EEPROM_Double        = Constants::EEPROM_Start + 4;
+    constexpr uint16_t EEPROM_Tug_Of_War    = Constants::EEPROM_Start + 6;
+    constexpr uint16_t EEPROM_Mode          = Constants::EEPROM_Start + 8;
+    constexpr uint16_t EEPROM_Rotation      = Constants::EEPROM_Start + 9;
+    constexpr uint16_t EEPROM_Lock_LVL_0    = Constants::EEPROM_Start + 10;
+    constexpr uint16_t EEPROM_Lock_LVL_1    = Constants::EEPROM_Start + 11;
+    constexpr uint16_t EEPROM_End           = Constants::EEPROM_Start + 12;
+    constexpr uint16_t EEPROM_Checksum      = Constants::EEPROM_End;
+
     constexpr uint8_t ParticlesMax = 30;
     constexpr uint8_t MaskWidth = 1;
 
