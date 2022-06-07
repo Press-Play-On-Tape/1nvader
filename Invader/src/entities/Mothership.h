@@ -226,6 +226,7 @@ struct Mothership {
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        player1.setBeingPushed(true);
 
                     }
 
@@ -236,6 +237,7 @@ struct Mothership {
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight < player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        player1.setBeingPushed(true);
 
                     }
 
@@ -246,6 +248,7 @@ struct Mothership {
                     if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        player1.setBeingPushed(true);
 
                     }
 
@@ -256,6 +259,7 @@ struct Mothership {
                     if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight < player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        player1.setBeingPushed(true);
 
                     }
 
@@ -276,6 +280,7 @@ struct Mothership {
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight <= player2.getPos()) {
 
                         player2.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        player2.setBeingPushed(true);
 
                         if (player2.getPos() - Constants::PlayerHeight <= player1.getPos()) {
 
@@ -292,6 +297,7 @@ struct Mothership {
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        player1.setBeingPushed(true);
 
                         if (player1.getPos() + Constants::PlayerHeight >= player2.getPos()) {
 
@@ -308,6 +314,7 @@ struct Mothership {
                     if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight <= player2.getPos()) {
 
                         player2.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        player2.setBeingPushed(true);
 
                         if (player2.getPos() - Constants::PlayerHeight <= player1.getPos()) {
 
@@ -324,6 +331,7 @@ struct Mothership {
                     if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
 
                         player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        player1.setBeingPushed(true);
 
                         if (player1.getPos() + Constants::PlayerHeight >= player2.getPos()) {
 
@@ -350,10 +358,12 @@ struct Mothership {
 
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= player1.getPos()) {
                         player1.setPos(this->getPosDisplay() - Constants::PlayerWidth);
+                        player1.setBeingPushed(true);
                     }
 
                     if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= player2.getPos()) {
                         player2.setPos(this->getPosDisplay() - Constants::PlayerWidth);
+                        player2.setBeingPushed(true);
                     }
 
                     break;
@@ -362,10 +372,12 @@ struct Mothership {
 
                     if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= player1.getPos()) {
                         player1.setPos(this->getPosDisplay() + Constants::PlayerWidth);
+                        player1.setBeingPushed(true);
                     }
 
                     if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= player2.getPos()) {
                         player2.setPos(this->getPosDisplay() + Constants::PlayerWidth);
+                        player2.setBeingPushed(true);
                     }
 
                     break;

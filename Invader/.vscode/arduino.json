@@ -1,6 +1,6 @@
 {
-    "configuration": "core=arduboy-core,boot=org",
-    "board": "arduboy-homemade:avr:arduboy",
+    "configuration": "core=arduboy-core,boot=cathy3k,contrast=normal",
+    "board": "arduboy-homemade:avr:8bitcadexlup",
     "sketch": "Invader.ino",
     "output": "../../build"
 }

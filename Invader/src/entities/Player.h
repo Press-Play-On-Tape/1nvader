@@ -13,6 +13,7 @@ struct Player {
         int16_t bulletY = 0;
         uint16_t score = 0;
         bool bulletActive = false;
+        bool beingPushed = false;
         Movement movement = Movement::Up;
 
 
@@ -25,6 +26,7 @@ struct Player {
         uint16_t getScore()                                 { return this->score; }
         uint8_t getExplosionCounter()                       { return this->explodeCounter; }
         bool getBulletActive()                              { return this->bulletActive; }
+        bool getBeingPushed()                               { return this->beingPushed; }
         Movement getMovement()                              { return this->movement; }
 
         void setPos(int8_t val)                             { this->pos = val; }
@@ -33,6 +35,7 @@ struct Player {
         void setBulletY(int16_t val)                        { this->bulletY = val; }
         void setScore(uint16_t val)                         { this->score = val; }
         void setBulletActive(bool val)                      { this->bulletActive = val; }
+        void setBeingPushed(bool val)                       { this->beingPushed = val; }
         void setMovement(Movement val)                      { this->movement = val; }
 
     public:
@@ -268,6 +271,7 @@ struct Player {
             this->setPlayerIdx(playerNumber);
             this->score = 0;
             this->bulletActive = false;
+            this->beingPushed = false;
 
         }
 

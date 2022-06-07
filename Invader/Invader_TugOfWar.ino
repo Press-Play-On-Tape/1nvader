@@ -11,7 +11,10 @@ void tugOfWar_Init() {
     player2.reset(1);
 
     player1.setPos(45);
-    player2.setPos(45);
+    player1.setMovement(Movement::Up);
+
+    player2.setPos(25);
+    player2.setMovement(Movement::Down);
 
 }   
 

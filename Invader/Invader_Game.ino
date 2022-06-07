@@ -62,7 +62,6 @@ void game_Init() {
 
 void game() {
 
-
     // DEBUG
     // if (arduboy.justPressed(DOWN_BUTTON)) {
 
@@ -111,23 +110,32 @@ void game() {
 
         // Handle movements ..
 
-        if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON)) {
+        if (!player1.getBeingPushed()) {
 
-            bool fired = player1.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player2 : nullptr));
+            if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON) ||
+                ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Single)) {
 
-            #ifdef SOUNDS
-                if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-            #endif
+                bool fired = player1.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player2 : nullptr));
+
+                #ifdef SOUNDS
+                    if (fired) sound.tones(Sounds::Player_Fires_Bullet);
+                #endif
+
+            }
 
         }
 
-        if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Double) {
+        if (!player2.getBeingPushed()) {
 
-            bool fired = player2.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player1 : nullptr));
+            if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Double) {
 
-            #ifdef SOUNDS
-                if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-            #endif
+                bool fired = player2.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player1 : nullptr));
+
+                #ifdef SOUNDS
+                    if (fired) sound.tones(Sounds::Player_Fires_Bullet);
+                #endif
+
+            }
 
         }
 
