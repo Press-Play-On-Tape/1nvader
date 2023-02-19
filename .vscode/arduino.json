@@ -1,7 +1,7 @@
 {
     "sketch": "Invader/Invader.ino",
-    "board": "arduboy-homemade:avr:8bitcadexlup",
+    "board": "arduboy-homemade:avr:arduboy-fx",
     "output": "../build",
     "port": "/dev/cu.usbmodem14601",
-    "configuration": "core=arduboy-core,boot=cathy3k,contrast=normal"
+    "configuration": "core=arduboy-core,boot=cathy3k"
 }

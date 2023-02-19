@@ -38,18 +38,13 @@ void setup() {
     arduboy.systemButtons();
     arduboy.setFrameRate(60);
     arduboy.initRandomSeed();
+    arduboy.flashlight();
     arduboy.audio.begin();
 
     #ifdef SOUNDS
     arduboy.audio.begin();
     #endif
 
-// Serial.begin(9600);
-
-//     while (!arduboy.pressed(A_BUTTON)) {
-//        Serial.println("111"); 
-//     }
-// Serial.println("ssss");
    EEPROM_Utils::initEEPROM(false);
 
 }   
