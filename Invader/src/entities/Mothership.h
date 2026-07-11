@@ -39,6 +39,7 @@ struct Mothership {
             switch (gameRotation) {
 
                 case GameRotation::Portrait:
+
                     return base + (wave * Constants::WaveIncrease) - (counter * 3 / 2);
 
                 case GameRotation::Landscape:
@@ -129,83 +130,91 @@ struct Mothership {
 
                 case GameRotation::Portrait:        
 
-                    if (this->rowAdjustment == Constants::MothershipRowHeight) {
+                    #ifndef DEBUG_LANDSCAPE
 
-                        if (random(0, 2) == 0) {
-                            this->pos = Constants::Portrait::MothershipMinPos;
-                            this->movement = Movement::Down;
+                        if (this->rowAdjustment == Constants::MothershipRowHeight) {
+
+                            if (random(0, 2) == 0) {
+                                this->pos = Constants::Portrait::MothershipMinPos;
+                                this->movement = Movement::Down;
+                            }
+                            else {
+                                this->pos = Constants::Portrait::MothershipMaxPos;
+                                this->movement = Movement::Up;
+                            }
+
+                            switch (this->height) {
+
+                                case Constants::Portrait::MothershipStartHeight:
+                                    break;
+
+                                case Constants::Portrait::MothershipStartHeight - Constants::MothershipRowHeight:
+                                    this->height = Constants::Portrait::MothershipStartHeight;
+                                    break;
+
+                                case Constants::Portrait::MothershipStartHeight - Constants::MothershipRowHeight - Constants::MothershipRowHeight:
+                                    this->height = Constants::Portrait::MothershipStartHeight;
+                                    break;
+
+                                default:
+                                    this->height = this->height + Constants::MothershipRowHeight + Constants::MothershipRowHeight;
+                                    break;
+
+                            }
+
                         }
                         else {
-                            this->pos = Constants::Portrait::MothershipMaxPos;
-                            this->movement = Movement::Up;
+
+                            if (random(0, 2) == 0) {
+                                this->pos = Constants::Portrait::MothershipMinPos;
+                                this->movement = Movement::Down;
+                            }
+                            else {
+                                this->pos = Constants::Portrait::MothershipMaxPos;
+                                this->movement = Movement::Up;
+                            }
+
+                            this->height = this->height - this->rowAdjustment;
+                            
                         }
 
-                        switch (this->height) {
-
-                            case Constants::Portrait::MothershipStartHeight:
-                                break;
-
-                            case Constants::Portrait::MothershipStartHeight - Constants::MothershipRowHeight:
-                                this->height = Constants::Portrait::MothershipStartHeight;
-                                break;
-
-                            case Constants::Portrait::MothershipStartHeight - Constants::MothershipRowHeight - Constants::MothershipRowHeight:
-                                this->height = Constants::Portrait::MothershipStartHeight;
-                                break;
-
-                            default:
-                                this->height = this->height + Constants::MothershipRowHeight + Constants::MothershipRowHeight;
-                                break;
-
-                        }
-
-                    }
-                    else {
-
-                        if (random(0, 2) == 0) {
-                            this->pos = Constants::Portrait::MothershipMinPos;
-                            this->movement = Movement::Down;
-                        }
-                        else {
-                            this->pos = Constants::Portrait::MothershipMaxPos;
-                            this->movement = Movement::Up;
-                        }
-
-                        this->height = this->height - this->rowAdjustment;
-                        
-                    }
+                    #endif
 
                     break;
 
                 case GameRotation::Landscape:        
 
-                    if (random(0, 2) == 0) {
-                        this->pos = Constants::Landscape::MothershipMinPos;
-                        this->movement = Movement::Right;
-                    }
-                    else {
-                        this->pos = Constants::Landscape::MothershipMaxPos;
-                        this->movement = Movement::Left;
-                    }
+                    #ifndef DEBUG_PORTRAIT
 
-                    switch (this->height) {
+                        if (random(0, 2) == 0) {
+                            this->pos = Constants::Landscape::MothershipMinPos;
+                            this->movement = Movement::Right;
+                        }
+                        else {
+                            this->pos = Constants::Landscape::MothershipMaxPos;
+                            this->movement = Movement::Left;
+                        }
 
-                        case Constants::Landscape::MothershipStartHeight:
-                            break;
+                        switch (this->height) {
 
-                        case Constants::Landscape::MothershipStartHeight + Constants::MothershipRowHeight:
-                            this->height = Constants::Landscape::MothershipStartHeight;
-                            break;
+                            case Constants::Landscape::MothershipStartHeight:
+                                break;
 
-                        case Constants::Landscape::MothershipStartHeight + Constants::MothershipRowHeight + Constants::MothershipRowHeight:
-                            this->height = Constants::Landscape::MothershipStartHeight;
-                            break;
+                            case Constants::Landscape::MothershipStartHeight + Constants::MothershipRowHeight:
+                                this->height = Constants::Landscape::MothershipStartHeight;
+                                break;
 
-                        default:
-                            this->height = this->height - Constants::MothershipRowHeight - Constants::MothershipRowHeight;
-                            break;
+                            case Constants::Landscape::MothershipStartHeight + Constants::MothershipRowHeight + Constants::MothershipRowHeight:
+                                this->height = Constants::Landscape::MothershipStartHeight;
+                                break;
 
-                    }
+                            default:
+                                this->height = this->height - Constants::MothershipRowHeight - Constants::MothershipRowHeight;
+                                break;
+
+                        }
+
+                    #endif
 
                     break;                    
 
@@ -215,7 +224,7 @@ struct Mothership {
 
     public:
 
-        void move(GameRotation gameRotation, GameMode gameMode, Player &player1) {
+        void move(GameRotation gameRotation, GameMode gameMode, Player &thisPlayer) {
 
             this->move(gameRotation, gameMode);
 
@@ -223,10 +232,10 @@ struct Mothership {
 
                 case Movement::Down:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        thisPlayer.setBeingPushed(true);
 
                     }
 
@@ -234,10 +243,10 @@ struct Mothership {
 
                 case Movement::Up:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight < player1.getPos()) {
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight < thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() - Constants::PlayerHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        thisPlayer.setBeingPushed(true);
 
                     }
 
@@ -245,10 +254,10 @@ struct Mothership {
 
                 case Movement::Right:
 
-                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
+                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        thisPlayer.setBeingPushed(true);
 
                     }
 
@@ -256,10 +265,10 @@ struct Mothership {
 
                 case Movement::Left:
 
-                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight < player1.getPos()) {
+                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight < thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() - Constants::PlayerHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        thisPlayer.setBeingPushed(true);
 
                     }
 
@@ -269,7 +278,7 @@ struct Mothership {
         
         }
 
-        void move(GameRotation gameRotation, GameMode gameMode, Player &player1, Player &player2) {
+        void move(GameRotation gameRotation, GameMode gameMode, Player &thisPlayer, Player &otherPlayer) {
 
             this->move(gameRotation, gameMode);
 
@@ -277,14 +286,14 @@ struct Mothership {
 
                 case Movement::Up:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight <= player2.getPos()) {
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerHeight <= otherPlayer.getPos()) {
 
-                        player2.setPos(this->getPosDisplay() - Constants::PlayerHeight);
-                        player2.setBeingPushed(true);
+                        otherPlayer.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        otherPlayer.setBeingPushed(true);
 
-                        if (player2.getPos() - Constants::PlayerHeight <= player1.getPos()) {
+                        if (otherPlayer.getPos() - Constants::PlayerHeight <= thisPlayer.getPos()) {
 
-                            player1.setPos(player2.getPos() - Constants::PlayerHeight);
+                            thisPlayer.setPos(otherPlayer.getPos() - Constants::PlayerHeight);
 
                         }
 
@@ -294,14 +303,14 @@ struct Mothership {
 
                 case Movement::Down:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::MothershipHeight >= thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        thisPlayer.setBeingPushed(true);
 
-                        if (player1.getPos() + Constants::PlayerHeight >= player2.getPos()) {
+                        if (thisPlayer.getPos() + Constants::PlayerHeight >= otherPlayer.getPos()) {
 
-                            player2.setPos(player1.getPos() + Constants::PlayerHeight);
+                            otherPlayer.setPos(thisPlayer.getPos() + Constants::PlayerHeight);
 
                         }
 
@@ -311,14 +320,14 @@ struct Mothership {
 
                 case Movement::Left:
 
-                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight <= player2.getPos()) {
+                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() - Constants::PlayerHeight <= otherPlayer.getPos()) {
 
-                        player2.setPos(this->getPosDisplay() - Constants::PlayerHeight);
-                        player2.setBeingPushed(true);
+                        otherPlayer.setPos(this->getPosDisplay() - Constants::PlayerHeight);
+                        otherPlayer.setBeingPushed(true);
 
-                        if (player2.getPos() - Constants::PlayerHeight <= player1.getPos()) {
+                        if (otherPlayer.getPos() - Constants::PlayerHeight <= thisPlayer.getPos()) {
 
-                            player1.setPos(player2.getPos() - Constants::PlayerHeight);  //SJH << Height???
+                            thisPlayer.setPos(otherPlayer.getPos() - Constants::PlayerHeight);  //SJH << Height???
 
                         }
 
@@ -328,14 +337,14 @@ struct Mothership {
 
                 case Movement::Right:
 
-                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= player1.getPos()) {
+                    if (this->height > 64 - Constants::PlayerHeight - Constants::MothershipHeight && this->getPosDisplay() + Constants::MothershipHeight >= thisPlayer.getPos()) {
 
-                        player1.setPos(this->getPosDisplay() + Constants::MothershipHeight);
-                        player1.setBeingPushed(true);
+                        thisPlayer.setPos(this->getPosDisplay() + Constants::MothershipHeight);
+                        thisPlayer.setBeingPushed(true);
 
-                        if (player1.getPos() + Constants::PlayerHeight >= player2.getPos()) {
+                        if (thisPlayer.getPos() + Constants::PlayerHeight >= otherPlayer.getPos()) {
 
-                            player2.setPos(player1.getPos() + Constants::PlayerHeight);
+                            otherPlayer.setPos(thisPlayer.getPos() + Constants::PlayerHeight);
 
                         }
 
@@ -348,7 +357,7 @@ struct Mothership {
         }
 
 
-        void moveTugOfWar(Player &player1, Player &player2) {
+        void moveTugOfWar(Player &thisPlayer, Player &otherPlayer) {
 
             this->move(GameRotation::Portrait, GameMode::TugOfWar);
 
@@ -356,28 +365,28 @@ struct Mothership {
 
                 case Movement::Up:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= player1.getPos()) {
-                        player1.setPos(this->getPosDisplay() - Constants::PlayerWidth);
-                        player1.setBeingPushed(true);
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= thisPlayer.getPos()) {
+                        thisPlayer.setPos(this->getPosDisplay() - Constants::PlayerWidth);
+                        thisPlayer.setBeingPushed(true);
                     }
 
-                    if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= player2.getPos()) {
-                        player2.setPos(this->getPosDisplay() - Constants::PlayerWidth);
-                        player2.setBeingPushed(true);
+                    if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() - Constants::PlayerWidth <= otherPlayer.getPos()) {
+                        otherPlayer.setPos(this->getPosDisplay() - Constants::PlayerWidth);
+                        otherPlayer.setBeingPushed(true);
                     }
 
                     break;
 
                 case Movement::Down:
 
-                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= player1.getPos()) {
-                        player1.setPos(this->getPosDisplay() + Constants::PlayerWidth);
-                        player1.setBeingPushed(true);
+                    if (this->height < Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= thisPlayer.getPos()) {
+                        thisPlayer.setPos(this->getPosDisplay() + Constants::PlayerWidth);
+                        thisPlayer.setBeingPushed(true);
                     }
 
-                    if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= player2.getPos()) {
-                        player2.setPos(this->getPosDisplay() + Constants::PlayerWidth);
-                        player2.setBeingPushed(true);
+                    if (this->height + Constants::MothershipHeight > 128 - Constants::PlayerHeight && this->getPosDisplay() + Constants::PlayerWidth >= otherPlayer.getPos()) {
+                        otherPlayer.setPos(this->getPosDisplay() + Constants::PlayerWidth);
+                        otherPlayer.setBeingPushed(true);
                     }
 
                     break;
@@ -441,15 +450,27 @@ struct Mothership {
             switch (gameRotation) {
 
                 case GameRotation::Portrait:     
-                    this->movement = Movement::Down;   
-                    this->pos = Constants::Portrait::MothershipMinPos;
-                    this->height = Constants::Portrait::MothershipStartHeight;
+
+                    #ifndef DEBUG_LANDSCAPE
+
+                        this->movement = Movement::Down;   
+                        this->pos = Constants::Portrait::MothershipMinPos;
+                        this->height = Constants::Portrait::MothershipStartHeight;
+                    
+                    #endif
+                    
                     break;
                     
-                case GameRotation::Landscape:        
-                    this->movement = Movement::Right;   
-                    this->pos = Constants::Landscape::MothershipMinPos;
-                    this->height = Constants::Landscape::MothershipStartHeight;
+                case GameRotation::Landscape:      
+
+                    #ifndef DEBUG_PORTRAIT  
+
+                        this->movement = Movement::Right;   
+                        this->pos = Constants::Landscape::MothershipMinPos;
+                        this->height = Constants::Landscape::MothershipStartHeight;
+
+                    #endif
+
                     break;
 
             }

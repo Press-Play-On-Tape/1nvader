@@ -22,7 +22,7 @@ void title_Init() {
 
 void title() {
 
-    renderScenery(GameMode::Single);
+    renderScenery(GameMode::Single, true);
     renderHighScore(gameMode, false);
     
     if (arduboy.justPressed(B_BUTTON)) {
@@ -37,140 +37,156 @@ void title() {
 
         case GameRotation::Portrait:
 
-            Sprites::drawExternalMask(titleScreenVars.counter, 12, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+            #ifndef DEBUG_LANDSCAPE
+                
+                Sprites::drawExternalMask(titleScreenVars.counter, 12, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
 
-            switch (titleScreenVars.counter) {
+                switch (titleScreenVars.counter) {
 
-                case 89:
-                    renderPlayerSelection(true);
-                    renderInvaderSign();
-                    break;
+                    case 89:
+                        renderPlayerSelection(true);
+                        renderInvaderSign();
+                        break;
 
-                case 90 ... 97:
-                    renderPlayerSelection(true);
-                    renderInvaderSign();
-                    titleScreenVars.counter++;
-                    break;
+                    case 90 ... 97:
+                        renderPlayerSelection(true);
+                        renderInvaderSign();
+                        titleScreenVars.counter++;
+                        break;
 
-                case 98 ... 105:
-                    renderPlayerSelection(false);
-                    renderInvaderSign();
-                    titleScreenVars.counter++;
-                    break;
+                    case 98 ... 105:
+                        renderPlayerSelection(false);
+                        renderInvaderSign();
+                        titleScreenVars.counter++;
+                        break;
 
-                case 106 ... 128:
-                    renderPlayerSelection(false);
-                    titleScreenVars.counter++;
-                    break;
+                    case 106 ... 128:
+                        renderPlayerSelection(false);
+                        titleScreenVars.counter++;
+                        break;
 
-                case 129:
+                    case 129:
 
-                    switch (gameMode) {
+                        switch (gameMode) {
 
-                        case GameMode::Single ... GameMode::Double:
-                            gameState = GameState::Game_Init;
-                            break;
+                            case GameMode::Single:
+                                gameState = GameState::Game_Init;
+                                break;
 
-                        case GameMode::TugOfWar:
-                            gameState = GameState::TugOfWar_Init;
-                            break;
+                            case GameMode::Double:
+                                gameState = GameState::Multi_Init;
+                                break;
 
-                    }
+                            case GameMode::TugOfWar:
+                                gameState = GameState::Multi_Init;
+                                break;
 
-                    break;
-                    
-            }
+                        }
 
-            if (arduboy.justPressed(RIGHT_BUTTON) && gameMode != GameMode::Single) { 
+                        break;
+                        
+                }
 
-                gameMode--;
-            
-            }
+                if (arduboy.justPressed(RIGHT_BUTTON) && gameMode != GameMode::Single) { 
 
-            if (arduboy.justPressed(LEFT_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
+                    gameMode--;
+                
+                }
 
-                gameMode++;
+                if (arduboy.justPressed(LEFT_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
 
-            }
+                    gameMode++;
 
-            if (arduboy.justPressed(A_BUTTON) && titleScreenVars.counter == 89) { 
+                }
 
-                titleScreenVars.counter = 90;
+                if (arduboy.justPressed(A_BUTTON) && titleScreenVars.counter == 89) { 
 
-            }
+                    titleScreenVars.counter = 90;
+
+                }
+
+            #endif
 
             break;
 
         case GameRotation::Landscape:
 
-            Sprites::drawExternalMask(14, titleScreenVars.counter, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+            #ifndef DEBUG_PORTRAIT
 
-            switch (titleScreenVars.counter) {
+                Sprites::drawExternalMask(14, titleScreenVars.counter, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
 
-                case 0:
-                    renderPlayerSelection(true);
-                    renderInvaderSign();
-                    break;
+                switch (titleScreenVars.counter) {
 
-                case -8 ... -1:
-                    renderPlayerSelection(true);
-                    renderInvaderSign();
-                    titleScreenVars.counter--;
-                    break;
+                    case 0:
+                        renderPlayerSelection(true);
+                        renderInvaderSign();
+                        break;
 
-                case -18 ... -9:
-                    renderPlayerSelection(false);
-                    renderInvaderSign();
-                    titleScreenVars.counter--;
-                    break;
+                    case -8 ... -1:
+                        renderPlayerSelection(true);
+                        renderInvaderSign();
+                        titleScreenVars.counter--;
+                        break;
 
-                case -38 ... -19:
-                    renderPlayerSelection(false);
-                    titleScreenVars.counter--;
-                    break;
+                    case -18 ... -9:
+                        renderPlayerSelection(false);
+                        renderInvaderSign();
+                        titleScreenVars.counter--;
+                        break;
 
-                case -39:
+                    case -38 ... -19:
+                        renderPlayerSelection(false);
+                        titleScreenVars.counter--;
+                        break;
 
-                    switch (gameMode) {
+                    case -39:
 
-                        case GameMode::Single ... GameMode::Double:
-                            gameState = GameState::Game_Init;
-                            break;
+                        switch (gameMode) {
 
-                        case GameMode::TugOfWar:
+                            case GameMode::Single:
+                                gameState = GameState::Game_Init;
+                                break;
 
-                            if (gameRotation == GameRotation::Landscape) {
-                                gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
-                                gameState = GameState::Title_Init;
-                                EEPROM_Utils::saveRotation(gameRotation);
-                            }
-                            
-                            gameState = GameState::TugOfWar_Init;
-                            break;
+                            case GameMode::Double:
+                                gameState = GameState::Multi_Init;
+                                break;
 
-                    }
+                            case GameMode::TugOfWar:
 
-                    break;
-                    
-            }
+                                if (gameRotation == GameRotation::Landscape) {
+                                    gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
+                                    gameState = GameState::Title_Init;
+                                    EEPROM_Utils::saveRotation(gameRotation);
+                                }
+                                
+                                gameState = GameState::Multi_Init;
+                                break;
 
-            if (arduboy.justPressed(UP_BUTTON) && gameMode != GameMode::Single) { 
+                        }
 
-                gameMode--;
+                        break;
+                        
+                }
 
-            }
+                if (arduboy.justPressed(UP_BUTTON) && gameMode != GameMode::Single) { 
 
-            if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
+                    gameMode--;
 
-                gameMode++;
+                }
 
-            }
+                if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
 
-            if (arduboy.justPressed(A_BUTTON) && titleScreenVars.counter == 0) { 
+                    gameMode++;
 
-                titleScreenVars.counter = -1;
+                }
 
-            }
+                if (arduboy.justPressed(A_BUTTON) && titleScreenVars.counter == 0) { 
+
+                    titleScreenVars.counter = -1;
+
+                }
+
+            #endif
 
             break;
 
@@ -184,33 +200,41 @@ void renderPlayerSelection(bool renderPlayerSelection) {
 
         case GameRotation::Portrait:
 
-            Sprites::drawOverwrite(31, 20, Images::Portrait::Rotate, 0);
+            #ifndef DEBUG_LANDSCAPE
+                
+                Sprites::drawOverwrite(31, 20, Images::Portrait::Rotate, 0);
 
-            if (!renderPlayerSelection) return;
+                if (!renderPlayerSelection) return;
 
-            Sprites::drawSelfMasked(62 - (static_cast<uint8_t>(gameMode) * 8), 5, Images::Portrait::DownArrow, Constants::Arrow_Frames[arduboy.getFrameCount(48) / 12]);
-            Sprites::drawOverwrite(62, 13, Images::Portrait::SurvivalMode, 0);
-            Sprites::drawOverwrite(54, 13, Images::Portrait::VSMode, 0);
-            Sprites::drawOverwrite(46, 13, Images::Portrait::TugOfWarMode, 0);
+                Sprites::drawSelfMasked(62 - (static_cast<uint8_t>(gameMode) * 8), 5, Images::Portrait::DownArrow, Constants::Arrow_Frames[arduboy.getFrameCount(48) / 12]);
+                Sprites::drawOverwrite(62, 13, Images::Portrait::SurvivalMode, 0);
+                Sprites::drawOverwrite(54, 13, Images::Portrait::VSMode, 0);
+                Sprites::drawOverwrite(46, 13, Images::Portrait::TugOfWarMode, 0);
 
-            if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(54, 5, Images::Portrait::Lock, 0);
-            if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(46, 5, Images::Portrait::Lock, 0);
+                if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(54, 5, Images::Portrait::Lock, 0);
+                if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(46, 5, Images::Portrait::Lock, 0);
 
+            #endif
+            
             break;
 
         case GameRotation::Landscape:
 
-            Sprites::drawOverwrite(85, 53, Images::Landscape::Rotate, 0);
+            #ifndef DEBUG_PORTRAIT
+                
+                Sprites::drawOverwrite(85, 53, Images::Landscape::Rotate, 0);
 
-            if (!renderPlayerSelection) return;
+                if (!renderPlayerSelection) return;
 
-            Sprites::drawSelfMasked(71, 12 + (static_cast<uint8_t>(gameMode) * 9), Images::Landscape::LeftArrow, Constants::Arrow_Frames[arduboy.getFrameCount(48) / 12]);
-            Sprites::drawOverwrite(79, 12, Images::Landscape::SurvivalMode, 0);
-            Sprites::drawOverwrite(79, 21, Images::Landscape::VSMode, 0);
-            Sprites::drawOverwrite(79, 30, Images::Landscape::TugOfWarMode, 0);
+                Sprites::drawSelfMasked(71, 12 + (static_cast<uint8_t>(gameMode) * 9), Images::Landscape::LeftArrow, Constants::Arrow_Frames[arduboy.getFrameCount(48) / 12]);
+                Sprites::drawOverwrite(79, 12, Images::Landscape::SurvivalMode, 0);
+                Sprites::drawOverwrite(79, 21, Images::Landscape::VSMode, 0);
+                Sprites::drawOverwrite(79, 30, Images::Landscape::TugOfWarMode, 0);
 
-            if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(71, 21, Images::Landscape::Lock, 0);
-            if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(71, 30, Images::Landscape::Lock, 0);
+                if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(71, 21, Images::Landscape::Lock, 0);
+                if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(71, 30, Images::Landscape::Lock, 0);
+
+            #endif
 
             break;
             

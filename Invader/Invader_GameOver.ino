@@ -8,17 +8,21 @@ void gameOver_Init() {
     switch (gameRotation) {
 
         case GameRotation::Portrait:
-            gameOverScreenVars.counter = 130;
+            #ifndef DEBUG_LANDSCAPE
+                gameOverScreenVars.counter = 130;
+            #endif
             break;
 
         case GameRotation::Landscape:
-            gameOverScreenVars.counter = -20;
+            #ifndef DEBUG_PORTRAIT
+                gameOverScreenVars.counter = -20;
+            #endif
             break;
 
     }
 
     uint16_t oldScore = EEPROM_Utils::getScore(gameMode);
-    uint16_t score = (gameMode == GameMode::Single ? player1.getScore() : player1.getScore() > player2.getScore() ? player1.getScore() : player2.getScore());
+    uint16_t score = (gameMode == GameMode::Single ? thisPlayer.getScore() : thisPlayer.getScore() > otherPlayer.getScore() ? thisPlayer.getScore() : otherPlayer.getScore());
 
     if (score > 80) {
 
@@ -42,15 +46,15 @@ void gameOver_Init() {
 
     if (gameMode == GameMode::Double) {
 
-        gameOverScreenVars.flashPlayer1 = player1.getScore() > player2.getScore();
-        gameOverScreenVars.flashPlayer2 = player2.getScore() > player1.getScore();
+        gameOverScreenVars.flashthisPlayer = thisPlayer.getScore() > otherPlayer.getScore();
+        gameOverScreenVars.flashotherPlayer = otherPlayer.getScore() > thisPlayer.getScore();
         
     }
     
     if (oldScore < score) {
 
         if (gameMode == GameMode::Single) {
-            gameOverScreenVars.flashPlayer1 = true;
+            gameOverScreenVars.flashthisPlayer = true;
         }
 
         gameOverScreenVars.newHighScore = true;
@@ -74,21 +78,25 @@ void gameOver() {
 
         case GameRotation::Portrait:
 
-            if (gameOverScreenVars.counter > 75) {
+            #ifndef DEBUG_LANDSCAPE
+                if (gameOverScreenVars.counter > 75) {
 
-                gameOverScreenVars.counter--;
+                    gameOverScreenVars.counter--;
 
-            }
+                }
+            #endif
 
             break;
 
         case GameRotation::Landscape:
 
-            if (gameOverScreenVars.counter < 4) {
+            #ifndef DEBUG_PORTRAIT
+                if (gameOverScreenVars.counter < 4) {
 
-                gameOverScreenVars.counter++;
+                    gameOverScreenVars.counter++;
 
-            }
+                }
+            #endif
 
             break;
 
@@ -99,6 +107,7 @@ void gameOver() {
 
     if (arduboy.justPressed(A_BUTTON)) { 
 
+        killGame();
         gameState = GameState::Title_Init;
 
     }
@@ -106,39 +115,49 @@ void gameOver() {
 
     // Render screen ---------------------------------------------------------------------
 
-    renderScores(gameOverScreenVars.flashPlayer1, gameOverScreenVars.flashPlayer2);
-    renderScenery(gameMode);
+    renderScores(gameOverScreenVars.flashthisPlayer, gameOverScreenVars.flashotherPlayer);
+    renderScenery(gameMode, true);
 
     switch (gameRotation) {
 
         case GameRotation::Portrait:
 
-            Sprites::drawExternalMask(gameOverScreenVars.counter, 11, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-
-            if (gameOverScreenVars.counter == 75) {
-
-                Sprites::drawSelfMasked(52, 17, Images::Portrait::GameOver, 0);
+            #ifndef DEBUG_LANDSCAPE
                 
-                if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                    renderHighScore(gameMode, false);
-                }
+                Sprites::drawExternalMask(gameOverScreenVars.counter, 11, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title, Images::Portrait::MOTHERSHIP_SIZE_PORTRAIT::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
 
-            }
+                if (gameOverScreenVars.counter == 75) {
+
+                    Sprites::drawSelfMasked(52, 17, Images::Portrait::GameOver, 0);
+                    
+                    if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                        renderHighScore(gameMode, false);
+                    }
+
+                }
+            
+            #endif
+
             break;
 
         case GameRotation::Landscape:
 
-            Sprites::drawExternalMask(43, gameOverScreenVars.counter, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+            #ifndef DEBUG_PORTRAIT
 
-            if (gameOverScreenVars.counter == 4) {
+                Sprites::drawExternalMask(43, gameOverScreenVars.counter, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title, Images::Landscape::MOTHERSHIP_SIZE_LANDSCAPE::Mothership_Title_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
 
-                Sprites::drawSelfMasked(32, 32, Images::Landscape::GameOver, 0);
-                
-                if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                    renderHighScore(gameMode, true);
+                if (gameOverScreenVars.counter == 4) {
+
+                    Sprites::drawSelfMasked(32, 32, Images::Landscape::GameOver, 0);
+                    
+                    if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                        renderHighScore(gameMode, true);
+                    }
+
                 }
 
-            }
+            #endif
+
             break;
 
     }

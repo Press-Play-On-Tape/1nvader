@@ -33,42 +33,46 @@ void splashScreen() {
 
         case GameRotation::Portrait:
 
-            Sprites::drawOverwrite(51, 0, Images::Portrait::PPOT, 0);
+            #ifndef DEBUG_LANDSCAPE
+                
+                Sprites::drawOverwrite(51, 0, Images::Portrait::PPOT, 0);
 
-            switch (arduboy.getFrameCount(ppotFrames)) {
+                switch (arduboy.getFrameCount(ppotFrames)) {
 
-                // 2nd quarter of frames
-                case (ppotFrames*1/4) ... (ppotFrames*2/4)-1:
-                    p = 68; // Move pixel across to position 1
-                    /*-fallthrough*/
+                    // 2nd quarter of frames
+                    case (ppotFrames*1/4) ... (ppotFrames*2/4)-1:
+                        p = 68; // Move pixel across to position 1
+                        /*-fallthrough*/
 
-                // 1st quarter of frames
-                case 0 ... (ppotFrames*1/4)-1:
-                    // Flash 'Play' arrow by clearing the image
-                    // Overwrite using blank sprite 
-                    Sprites::drawOverwrite(67, 58, Images::Portrait::PPOT_Blank, 0);
-                    break;
+                    // 1st quarter of frames
+                    case 0 ... (ppotFrames*1/4)-1:
+                        // Flash 'Play' arrow by clearing the image
+                        // Overwrite using blank sprite 
+                        Sprites::drawOverwrite(67, 58, Images::Portrait::PPOT_Blank, 0);
+                        break;
 
-                // 3rd quarter of frames
-                case (ppotFrames*2/4) ... (ppotFrames*3/4)-1:
-                    p = 67; // Move pixel across to position 2
-                    break;
+                    // 3rd quarter of frames
+                    case (ppotFrames*2/4) ... (ppotFrames*3/4)-1:
+                        p = 67; // Move pixel across to position 2
+                        break;
 
-                // 4th quarter of frames
-                default:
-                    p = 66; // Move pixel across to position 3
-                    break;
+                    // 4th quarter of frames
+                    default:
+                        p = 66; // Move pixel across to position 3
+                        break;
 
-            }
-            // Draw pixel to represent the tape spooling
-            // Render using pixel function 
-            arduboy.drawPixel(p, 20, WHITE);
+                }
+                // Draw pixel to represent the tape spooling
+                // Render using pixel function 
+                arduboy.drawPixel(p, 20, WHITE);
 
-            // On even steps of pixel movement, update the spindle image
-            if (p % 2 == 0) {
-                arduboy.sBuffer[68 +(1*WIDTH)] = 0x4B;
-                arduboy.sBuffer[69 +(1*WIDTH)] = 0x2B;
-            }
+                // On even steps of pixel movement, update the spindle image
+                if (p % 2 == 0) {
+                    arduboy.sBuffer[68 +(1*WIDTH)] = 0x4B;
+                    arduboy.sBuffer[69 +(1*WIDTH)] = 0x2B;
+                }
+
+            #endif
 
             break;
 

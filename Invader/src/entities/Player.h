@@ -81,48 +81,54 @@ struct Player {
 
                 case GameRotation::Portrait:
 
-                    switch (gameMode) {
+                    #ifndef DEBUG_LANDSCAPE
 
-                        case GameMode::Single ... GameMode::Double:
+                        switch (gameMode) {
 
-                            this->bulletX = 4;
-                            this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
-                            this->bulletActive = true;
-                            if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
-                            break;
+                            case GameMode::Single ... GameMode::Double:
 
-                        case GameMode::TugOfWar:
+                                this->bulletX = 4;
+                                this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
+                                this->bulletActive = true;
+                                if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
+                                break;
 
-                            switch (this->getPlayerIdx()) {
+                            case GameMode::TugOfWar:
 
-                                case 0:
-                                    this->bulletX = 4;
-                                    this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
-                                    this->bulletActive = true;
-                                    changeMovement(gameRotation);
-                                    break;
+                                switch (this->getPlayerIdx()) {
 
-                                case 1:
-                                    this->bulletX = 112;
-                                    this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
-                                    this->bulletActive = true;
-                                    changeMovement(gameRotation);
-                                    break;
+                                    case 0:
+                                        this->bulletX = 4;
+                                        this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
+                                        this->bulletActive = true;
+                                        changeMovement(gameRotation);
+                                        break;
 
-                            }
+                                    case 1:
+                                        this->bulletX = 112;
+                                        this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
+                                        this->bulletActive = true;
+                                        changeMovement(gameRotation);
+                                        break;
 
-                            break;
- 
-                    }
+                                }
+
+                                break;
+    
+                        }
+
+                    #endif
 
                     break;
 
                 case GameRotation::Landscape:
 
-                    this->bulletX = this->pos + 3;
-                    this->bulletY = 55;
-                    this->bulletActive = true;
-                    if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
+                    #ifndef DEBUG_PORTRAIT
+                        this->bulletX = this->pos + 3;
+                        this->bulletY = 55;
+                        this->bulletActive = true;
+                        if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
+                    #endif
 
                     break;
 
@@ -160,69 +166,77 @@ struct Player {
 
                 case GameRotation::Portrait:
 
-                    switch (this->pos) {
+                    #ifndef DEBUG_LANDSCAPE
 
-                        case Constants::Portrait::PlayerMinPos:
-                            this->movement = Movement::Down;
-                            break;
+                        switch (this->pos) {
 
-                        case Constants::Portrait::PlayerMaxPos:
-                            this->movement = Movement::Up;
-                            break;
+                            case Constants::Portrait::PlayerMinPos:
+                                this->movement = Movement::Down;
+                                break;
 
-                        default:
+                            case Constants::Portrait::PlayerMaxPos:
+                                this->movement = Movement::Up;
+                                break;
 
-                            switch (this->movement) {
+                            default:
 
-                                case Movement::Up:
-                                    this->movement = Movement::Down;
-                                    break;
+                                switch (this->movement) {
 
-                                case Movement::Down:
-                                    this->movement = Movement::Up;
-                                    break;
+                                    case Movement::Up:
+                                        this->movement = Movement::Down;
+                                        break;
 
-                                default: break;
+                                    case Movement::Down:
+                                        this->movement = Movement::Up;
+                                        break;
 
-                            }
+                                    default: break;
 
-                            break;
+                                }
 
-                    }
+                                break;
+
+                        }
+
+                    #endif
 
                     break;
 
                 case GameRotation::Landscape:
 
-                    switch (this->pos) {
+                    #ifndef DEBUG_PORTRAIT
 
-                        case Constants::Landscape::PlayerMinPos:
-                            this->movement = Movement::Right;
-                            break;
+                        switch (this->pos) {
 
-                        case Constants::Landscape::PlayerMaxPos:
-                            this->movement = Movement::Left;
-                            break;
+                            case Constants::Landscape::PlayerMinPos:
+                                this->movement = Movement::Right;
+                                break;
 
-                        default:
+                            case Constants::Landscape::PlayerMaxPos:
+                                this->movement = Movement::Left;
+                                break;
 
-                            switch (this->movement) {
+                            default:
 
-                                case Movement::Left:
-                                    this->movement = Movement::Right;
-                                    break;
+                                switch (this->movement) {
 
-                                case Movement::Right:
-                                    this->movement = Movement::Left;
-                                    break;
+                                    case Movement::Left:
+                                        this->movement = Movement::Right;
+                                        break;
 
-                                default: break;
+                                    case Movement::Right:
+                                        this->movement = Movement::Left;
+                                        break;
 
-                            }
+                                    default: break;
 
-                            break;
+                                }
 
-                    }
+                                break;
+
+                        }
+
+                    #endif
 
                     break;            
 

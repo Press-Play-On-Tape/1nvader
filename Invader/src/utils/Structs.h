@@ -39,15 +39,15 @@ struct GameOverScreenVars {
 
     int16_t counter = 0;
     bool newHighScore = false;
-    bool flashPlayer1 = false;
-    bool flashPlayer2 = false;
+    bool flashthisPlayer = false;
+    bool flashotherPlayer = false;
 
     void reset() {
 
         this->counter = 128;
         newHighScore = false;
-        flashPlayer1 = false;
-        flashPlayer2 = false;
+        flashthisPlayer = false;
+        flashotherPlayer = false;
 
     }
 

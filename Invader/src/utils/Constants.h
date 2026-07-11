@@ -3,6 +3,8 @@
 // - Debug ------------------------------
 
 #define _DEBUG
+#define DEBUG_PORTRAIT
+#define _DEBUG_LANDSCAPE
 #define SOUNDS
 
 // ---------------------------------------
@@ -80,6 +82,8 @@ enum class GameState : uint8_t {
     Splash,
     Title_Init,
     Title,
+    Multi_Init,
+    Multi,
     Game_Init,
     Game,
     TugOfWar_Init,

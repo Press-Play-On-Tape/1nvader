@@ -7,54 +7,99 @@ void game_Init() {
     mothership.reset(gameRotation, gameRotation == GameRotation::Landscape ? -Constants::MothershipRowHeight : Constants::MothershipRowHeight);
     gamePlayVars.bombCounter = random(256, 1024);
 
-    player1.reset(0);
-    player2.reset(1);
+    thisPlayer.reset(0);
+    otherPlayer.reset(1);
 
     switch (gameRotation) {
 
         case GameRotation::Portrait:
 
-            switch (gameMode) {
+            #ifndef DEBUG_LANDSCAPE
+                
+                switch (gameMode) {
 
-                case GameMode::Single:
-                    player1.setPos(26);
-                    player1.setMovement(Movement::Up);
-                    break;
+                    case GameMode::Single:
+                        thisPlayer.setPos(26);
+                        thisPlayer.setMovement(Movement::Up);
+                        break;
 
-                default:
-                    player1.setPlayerIdx(0);
-                    player1.setPos(13);
-                    player1.setMovement(Movement::Up);
+                    default:
 
-                    player2.setPos(38);
-                    player2.setMovement(Movement::Down);
-                    break;
+                        if (role == I2C::Role::Controller) {
 
-            }
+                            thisPlayer.setPlayerIdx(0);
+                            thisPlayer.setPos(13);
+                            thisPlayer.setMovement(Movement::Up);
+
+                            otherPlayer.setPlayerIdx(1);
+                            otherPlayer.setPos(38);
+                            otherPlayer.setMovement(Movement::Down);
+
+                        }
+                        else {
+
+                            thisPlayer.setPlayerIdx(1);
+                            thisPlayer.setPos(38);
+                            thisPlayer.setMovement(Movement::Down);
+
+                            otherPlayer.setPlayerIdx(0);
+                            otherPlayer.setPos(13);
+                            otherPlayer.setMovement(Movement::Up);
+
+                        }
+
+                        break;
+
+                }
+
+            #endif
 
             break;
 
         case GameRotation::Landscape:
 
-            switch (gameMode) {
+            #ifndef DEBUG_PORTRAIT
+                
+                switch (gameMode) {
 
-                case GameMode::Single:
-                    player1.setPos(59);
-                    player1.setMovement(Movement::Left);
-                    break;
+                    case GameMode::Single:
+                        thisPlayer.setPos(59);
+                        thisPlayer.setMovement(Movement::Left);
+                        break;
 
-                default:
-                    player1.setPlayerIdx(0);
-                    player1.setPos(33);
-                    player1.setMovement(Movement::Left);
+                    default:
 
-                    player2.setPos(84);
-                    player2.setMovement(Movement::Right);
-                    break;
+                        if (role == I2C::Role::Controller) {
+                            
+                            thisPlayer.setPlayerIdx(0);
+                            thisPlayer.setPos(33);
+                            thisPlayer.setMovement(Movement::Left);
 
-            }
+                            otherPlayer.setPlayerIdx(1);
+                            otherPlayer.setPos(84);
+                            otherPlayer.setMovement(Movement::Right);
 
+                        } 
+                        else {
+                            
+                            thisPlayer.setPlayerIdx(1);
+                            thisPlayer.setPos(84);
+                            thisPlayer.setMovement(Movement::Right);
+
+                            otherPlayer.setPlayerIdx(0);
+                            otherPlayer.setPos(33);
+                            otherPlayer.setMovement(Movement::Left);
+
+                        }                        
+                        
+                        break;
+
+                }
+
+            #endif
+                
             break;
+
 
     }            
 
@@ -62,29 +107,49 @@ void game_Init() {
 
 void game() {
 
-    // DEBUG
-    // if (arduboy.justPressed(DOWN_BUTTON)) {
+    if (arduboy.justPressed(B_BUTTON)) { 
+        killGame();
+        return;
+    }
 
-    //     bomb.setActive(true);
-    //     bomb.setPos(mothership.getPosDisplay() + 6);
-    //     bomb.setHeight(mothership.getHeight() + 6);
 
-    // }
-    // if (arduboy.justPressed(DOWN_BUTTON)) {
+    // if we're the controller (master), ...
 
-    //     if (player1.getScore() < 80)        player1.setScore(79);
-    //     else if (player1.getScore() < 160)       player1.setScore(159);
-    //     else if (player1.getScore() < 240)       player1.setScore(239);
+    if (gameMode != GameMode::Single) {
+        
+        if (role == I2C::Role::Controller) {
+    // Serial.print("Oth: ");
+    // Serial.print(otherPlayer.getPos());
+            I2C::read(I2C::targetAddress, otherPlayer);
+    // Serial.print(" > ");
+    // Serial.println(otherPlayer.getPos());
 
-    //     mothership.setCounter(1);
+            if (I2C::getError() == I2C::Error::ReadAddrNack) {
+                killGame();
+                return;
+            }
 
-    // }
+            I2C::write(I2C::targetAddress, thisPlayer, I2C::Mode::Async);
+
+        }  
+        else {
+
+            if (!onReceive_Status) {
+                killGame();
+                return;
+            }
+
+            onReceive_Status = false;
+        } 
+
+    }
+
 
     // Randomly drop a bomb ?
 
     if (!gamePlayVars.waveCleared) {
 
-        if (player1.getScore() + player2.getScore() > 20) {
+        if (thisPlayer.getScore() + otherPlayer.getScore() > 20) {
 
             if ((gameRotation == GameRotation::Landscape && mothership.getHeight() < 30) || (gameRotation == GameRotation::Portrait && mothership.getHeight() > 56)) {
 
@@ -108,28 +173,15 @@ void game() {
 
         }
 
+
         // Handle movements ..
 
-        if (!player1.getBeingPushed()) {
+        if (!thisPlayer.getBeingPushed()) {
 
-            if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON) ||
-                ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Single)) {
-
-                bool fired = player1.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player2 : nullptr));
-
-                #ifdef SOUNDS
-                    if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-                #endif
-
-            }
-
-        }
-
-        if (!player2.getBeingPushed()) {
-
-            if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Double) {
-
-                bool fired = player2.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &player1 : nullptr));
+            // if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON) ||
+            //     ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Single)) {
+            if (arduboy.justPressed(A_BUTTON)) {
+                bool fired = thisPlayer.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &otherPlayer : nullptr));
 
                 #ifdef SOUNDS
                     if (fired) sound.tones(Sounds::Player_Fires_Bullet);
@@ -138,28 +190,51 @@ void game() {
             }
 
         }
+
+        // if (!otherPlayer.getBeingPushed()) {
+
+        //     if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Double) {
+
+        //         bool fired = otherPlayer.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &thisPlayer : nullptr));
+
+        //         #ifdef SOUNDS
+        //             if (fired) sound.tones(Sounds::Player_Fires_Bullet);
+        //         #endif
+
+        //     }
+
+        // }
 
 
         if (gameMode == GameMode::Double) {
 
-            movePlayer(player1, player2);
-            movePlayer(player2, player1);
-            mothership.move(gameRotation, gameMode, player1, player2);
+            // if (role == I2C::Role::Controller) {
+
+// Serial.print("Move ");
+// Serial.print(otherPlayer.getPos());                
+                movePlayer(thisPlayer, otherPlayer);
+                movePlayer(otherPlayer, thisPlayer);
+
+// Serial.print(" > ");
+// Serial.println(otherPlayer.getPos());                
+
+                mothership.move(gameRotation, gameMode, thisPlayer, otherPlayer);
+            // }
 
         }
         else {
 
-            movePlayer1();
-            mothership.move(gameRotation, gameMode, player1);
+            movethisPlayer();
+            mothership.move(gameRotation, gameMode, thisPlayer);
 
         }
 
-        if (player1.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(player1); 
-        if (player2.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(player2);
+        if (thisPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(thisPlayer); 
+        if (otherPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(otherPlayer);
         if (bomb.getActive()) moveBomb();
 
-        player1.decExplodeCounter();
-        player2.decExplodeCounter();
+        thisPlayer.decExplodeCounter();
+        otherPlayer.decExplodeCounter();
 
 
         // End of game?
@@ -168,53 +243,61 @@ void game() {
 
             case GameRotation::Portrait:
 
-                if (mothership.getHeight() < Constants::PlayerHeight) {
+                #ifndef DEBUG_LANDSCAPE
 
-                    switch (mothership.getMovement()) {
+                    if (mothership.getHeight() < Constants::PlayerHeight) {
 
-                        case Movement::Up:
-                            if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
-                                gameState = GameState::GameOver_Init;
-                            }
-                            break;
+                        switch (mothership.getMovement()) {
 
-                        case Movement::Down:
-                            if (mothership.getPosDisplay() > HEIGHT) {
-                                gameState = GameState::GameOver_Init;
-                            }
-                            break;
+                            case Movement::Up:
+                                if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
+                                    gameState = GameState::GameOver_Init;
+                                }
+                                break;
 
-                        default: break;
+                            case Movement::Down:
+                                if (mothership.getPosDisplay() > HEIGHT) {
+                                    gameState = GameState::GameOver_Init;
+                                }
+                                break;
+
+                            default: break;
+
+                        }
 
                     }
 
-                }
+                #endif
 
                 break;
             
             case GameRotation::Landscape:
 
-                if (mothership.getHeight() > 64 - Constants::PlayerHeight - Constants::MothershipHeight) {
+                #ifndef DEBUG_PORTRAIT
 
-                    switch (mothership.getMovement()) {
+                    if (mothership.getHeight() > 64 - Constants::PlayerHeight - Constants::MothershipHeight) {
 
-                        case Movement::Left:
-                            if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
-                                gameState = GameState::GameOver_Init;
-                            }
-                            break;
+                        switch (mothership.getMovement()) {
 
-                        case Movement::Right:
-                            if (mothership.getPosDisplay() > WIDTH) {
-                                gameState = GameState::GameOver_Init;
-                            }
-                            break;
+                            case Movement::Left:
+                                if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
+                                    gameState = GameState::GameOver_Init;
+                                }
+                                break;
 
-                        default: break;
+                            case Movement::Right:
+                                if (mothership.getPosDisplay() > WIDTH) {
+                                    gameState = GameState::GameOver_Init;
+                                }
+                                break;
+
+                            default: break;
+
+                        }
 
                     }
 
-                }
+                #endif
 
                 break;
 
@@ -228,171 +311,180 @@ void game() {
     // Render screen ---------------------------------------------------------------------
 
     renderScores(false, false);
-    renderScenery(gameMode);
+    renderScenery(gameMode, true);
     updateAndRenderParticles(gameRotation);
 
     switch (gameRotation) {
 
         case GameRotation::Portrait:
 
-            Sprites::drawExternalMask(0, player1.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
+            #ifndef DEBUG_LANDSCAPE
+                
+                Sprites::drawExternalMask(0, thisPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
 
-            if (player1.getExplosionCounter() > 0) {
+                if (thisPlayer.getExplosionCounter() > 0) {
 
-                Sprites::drawSelfMasked(0, player1.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - player1.getExplosionCounter()) / 2);
-
-            }
-
-            if (gameMode == GameMode::Double) {
-
-                Sprites::drawExternalMask(0, player2.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
-
-                if (player2.getExplosionCounter() > 0) {
-
-                    Sprites::drawSelfMasked(0, player2.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - player2.getExplosionCounter()) / 2);
+                    Sprites::drawSelfMasked(0, thisPlayer.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - thisPlayer.getExplosionCounter()) / 2);
 
                 }
 
-            }
+                if (gameMode == GameMode::Double) {
 
-            switch (mothership.getExplosionCounter()) {
+                    Sprites::drawExternalMask(0, otherPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
 
-                case 0:
-                    Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                    break;
+                    if (otherPlayer.getExplosionCounter() > 0) {
 
-                case 1 ... Constants::MothershipExplosionMax / 2:
-                    Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
-                    break;
+                        Sprites::drawSelfMasked(0, otherPlayer.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - otherPlayer.getExplosionCounter()) / 2);
 
-                case (Constants::MothershipExplosionMax / 2) + 1 ... Constants::MothershipExplosionMax:
-                    Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                    Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
-                    break;
+                    }
 
-            }
-
-            if (player1.getBulletActive())  Sprites::drawExternalMask(player1.getBulletX(), player1.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-            if (player2.getBulletActive())  Sprites::drawExternalMask(player2.getBulletX(), player2.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-            
-            if (bomb.getActive()) {
-
-                if (bomb.getExplosionCounter() == 0) {
-
-                    Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos(), Images::Portrait::Bomb, Images::Portrait::Bomb_Mask, 0, 0);
-                    
                 }
 
-                switch (bomb.getHeight()) {
+                switch (mothership.getExplosionCounter()) {
 
-                    case -2 ... -1:
-                        Sprites::drawExternalMask(0, bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                    case 0:
+                        Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
                         break;
 
-                    case -4 ... -3:
-                        Sprites::drawExternalMask(0, bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
+                    case 1 ... Constants::MothershipExplosionMax / 2:
+                        Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
                         break;
 
-                }        
+                    case (Constants::MothershipExplosionMax / 2) + 1 ... Constants::MothershipExplosionMax:
+                        Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+                        Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                        break;
 
-                if (bomb.getExploding()) {
+                }
 
-                    switch (bomb.getExplosionCounter()) {
+                if (thisPlayer.getBulletActive())  Sprites::drawExternalMask(thisPlayer.getBulletX(), thisPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+                if (otherPlayer.getBulletActive())  Sprites::drawExternalMask(otherPlayer.getBulletX(), otherPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+                
+                if (bomb.getActive()) {
 
-                        case 1 ... 2:
-                            Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
+                    if (bomb.getExplosionCounter() == 0) {
+
+                        Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos(), Images::Portrait::Bomb, Images::Portrait::Bomb_Mask, 0, 0);
+                        
+                    }
+
+                    switch (bomb.getHeight()) {
+
+                        case -2 ... -1:
+                            Sprites::drawExternalMask(0, bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
                             break;
 
-                        case 3 ... 4:
-                            Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                        case -4 ... -3:
+                            Sprites::drawExternalMask(0, bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
                             break;
 
                     }        
 
-                }
+                    if (bomb.getExploding()) {
 
-            }    
+                        switch (bomb.getExplosionCounter()) {
+
+                            case 1 ... 2:
+                                Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
+                                break;
+
+                            case 3 ... 4:
+                                Sprites::drawExternalMask(bomb.getHeight(), bomb.getPos() - 4, Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                                break;
+
+                        }        
+
+                    }
+
+                }    
+
+            #endif
+
             break;
 
         case GameRotation::Landscape:
 
-            Sprites::drawExternalMask(player1.getPos(), 56, Images::Landscape::Player, Images::Landscape::Player_Mask, 0, 0);
+            #ifndef DEBUG_PORTRAIT
 
-            if (player1.getExplosionCounter() > 0) {
+                Sprites::drawExternalMask(thisPlayer.getPos(), 56, Images::Landscape::Player, Images::Landscape::Player_Mask, 0, 0);
 
-                Sprites::drawSelfMasked(player1.getPos() - 4, 52, Images::Landscape::Player_Explosion, (6 - player1.getExplosionCounter()) / 2);
+                if (thisPlayer.getExplosionCounter() > 0) {
 
-            }
-
-            if (gameMode == GameMode::Double) {
-
-                Sprites::drawExternalMask(player2.getPos(), 56, Images::Landscape::Player, Images::Landscape::Player_Mask, 0, 0);
-
-                if (player2.getExplosionCounter() > 0) {
-
-                    Sprites::drawSelfMasked(player2.getPos() - 4, 52, Images::Landscape::Player_Explosion, (6 - player2.getExplosionCounter()) / 2);
+                    Sprites::drawSelfMasked(thisPlayer.getPos() - 4, 52, Images::Landscape::Player_Explosion, (6 - thisPlayer.getExplosionCounter()) / 2);
 
                 }
 
-            }
+                if (gameMode == GameMode::Double) {
 
-            switch (mothership.getExplosionCounter()) {
+                    Sprites::drawExternalMask(otherPlayer.getPos(), 56, Images::Landscape::Player, Images::Landscape::Player_Mask, 0, 0);
 
-                case 0:
-                    Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Mothership, Images::Landscape::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                    break;
+                    if (otherPlayer.getExplosionCounter() > 0) {
 
-                case 1 ... Constants::MothershipExplosionMax / 2:
-                    Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
-                    break;
+                        Sprites::drawSelfMasked(otherPlayer.getPos() - 4, 52, Images::Landscape::Player_Explosion, (6 - otherPlayer.getExplosionCounter()) / 2);
 
-                case (Constants::MothershipExplosionMax / 2) + 1 ... Constants::MothershipExplosionMax:
-                    Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Mothership, Images::Landscape::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                    Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
-                    break;
-
-            }
-
-            if (player1.getBulletActive())  Sprites::drawExternalMask(player1.getBulletX(), player1.getBulletY(), Images::Landscape::Laser, Images::Landscape::Laser_Mask, 0, 0);
-            if (player2.getBulletActive())  Sprites::drawExternalMask(player2.getBulletX(), player2.getBulletY(), Images::Landscape::Laser, Images::Landscape::Laser_Mask, 0, 0);
-            
-            if (bomb.getActive()) {
-
-                if (bomb.getExplosionCounter() == 0) {
-
-                    Sprites::drawExternalMask(bomb.getPos(), bomb.getHeight(), Images::Landscape::Bomb, Images::Landscape::Bomb_Mask, 0, 0);
+                    }
 
                 }
 
-                switch (bomb.getHeight()) {
+                switch (mothership.getExplosionCounter()) {
 
-                    case 60 ... 62:
-                        Sprites::drawExternalMask(bomb.getPos() - 4, 58, Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
+                    case 0:
+                        Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Mothership, Images::Landscape::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
                         break;
 
-                    case 63 ... 64:
-                        Sprites::drawExternalMask(bomb.getPos() - 4, 58, Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
+                    case 1 ... Constants::MothershipExplosionMax / 2:
+                        Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
                         break;
 
-                }        
+                    case (Constants::MothershipExplosionMax / 2) + 1 ... Constants::MothershipExplosionMax:
+                        Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Mothership, Images::Landscape::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+                        Sprites::drawExternalMask(mothership.getPosDisplay(), mothership.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
+                        break;
 
-                if (bomb.getExploding()) {
+                }
 
-                    switch (bomb.getExplosionCounter()) {
+                if (thisPlayer.getBulletActive())  Sprites::drawExternalMask(thisPlayer.getBulletX(), thisPlayer.getBulletY(), Images::Landscape::Laser, Images::Landscape::Laser_Mask, 0, 0);
+                if (otherPlayer.getBulletActive())  Sprites::drawExternalMask(otherPlayer.getBulletX(), otherPlayer.getBulletY(), Images::Landscape::Laser, Images::Landscape::Laser_Mask, 0, 0);
+                
+                if (bomb.getActive()) {
 
-                        case 1 ... 2:
-                            Sprites::drawExternalMask(bomb.getPos() - 4, bomb.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
+                    if (bomb.getExplosionCounter() == 0) {
+
+                        Sprites::drawExternalMask(bomb.getPos(), bomb.getHeight(), Images::Landscape::Bomb, Images::Landscape::Bomb_Mask, 0, 0);
+
+                    }
+
+                    switch (bomb.getHeight()) {
+
+                        case 60 ... 62:
+                            Sprites::drawExternalMask(bomb.getPos() - 4, 58, Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
                             break;
 
-                        case 3 ... 4:
-                            Sprites::drawExternalMask(bomb.getPos() - 4, bomb.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
+                        case 63 ... 64:
+                            Sprites::drawExternalMask(bomb.getPos() - 4, 58, Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
                             break;
 
                     }        
 
-                }
+                    if (bomb.getExploding()) {
 
-            }        
+                        switch (bomb.getExplosionCounter()) {
+
+                            case 1 ... 2:
+                                Sprites::drawExternalMask(bomb.getPos() - 4, bomb.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 1, 1);
+                                break;
+
+                            case 3 ... 4:
+                                Sprites::drawExternalMask(bomb.getPos() - 4, bomb.getHeight(), Images::Landscape::Explosion, Images::Landscape::Explosion_Mask, 0, 0);
+                                break;
+
+                        }        
+
+                    }
+
+                }        
+
+            #endif
 
             break;
 
@@ -403,8 +495,8 @@ void game() {
 
         // Clear an bullets from the screen ..
 
-        if (player1.getBulletActive()) player1.setBulletActive(false);
-        if (player2.getBulletActive()) player2.setBulletActive(false);
+        if (thisPlayer.getBulletActive()) thisPlayer.setBulletActive(false);
+        if (otherPlayer.getBulletActive()) otherPlayer.setBulletActive(false);
 
         if (gamePlayVars.waveCounter == 8) {
             #ifdef SOUNDS
@@ -423,17 +515,17 @@ void game() {
 
         if (gameMode == GameMode::Double) {
 
-            movePlayer(player1, player2);
-            movePlayer(player2, player1);
+            movePlayer(thisPlayer, otherPlayer);
+            movePlayer(otherPlayer, thisPlayer);
 
 
-            if (mothership.getExplosionCounter() > 0) mothership.move(gameRotation, gameMode, player1, player2);
+            if (mothership.getExplosionCounter() > 0) mothership.move(gameRotation, gameMode, thisPlayer, otherPlayer);
 
         }
         else {
 
-            movePlayer1();
-            if (mothership.getExplosionCounter() > 0) mothership.move(gameRotation, gameMode, player1);
+            movethisPlayer();
+            if (mothership.getExplosionCounter() > 0) mothership.move(gameRotation, gameMode, thisPlayer);
 
         }
 
@@ -444,13 +536,21 @@ void game() {
         switch (gameRotation) {
 
             case GameRotation::Portrait:
-                arduboy.drawRect(60, 32 - (idx * 4), 9, 4 + (idx * 8), BLACK);
-                Sprites::drawSelfMasked(60, 32 - (idx * 4), Images::Portrait::WaveCleared[idx], 0);
+
+                #ifndef DEBUG_LANDSCAPE
+                    arduboy.drawRect(60, 32 - (idx * 4), 9, 4 + (idx * 8), BLACK);
+                    Sprites::drawSelfMasked(60, 32 - (idx * 4), Images::Portrait::WaveCleared[idx], 0);
+                #endif
+
                 break;
 
             case GameRotation::Landscape:
-                arduboy.drawRect(60 - (idx * 4), 24, 4 + (idx * 8), 9, BLACK);
-                Sprites::drawSelfMasked(60 - (idx * 4), 24, Images::Landscape::WaveCleared[idx], 0);
+
+                #ifndef DEBUG_PORTRAIT
+                    arduboy.drawRect(60 - (idx * 4), 24, 4 + (idx * 8), 9, BLACK);
+                    Sprites::drawSelfMasked(60 - (idx * 4), 24, Images::Landscape::WaveCleared[idx], 0);
+                #endif
+
                 break;
 
         }         
@@ -580,37 +680,37 @@ void movePlayer(Player &player, Player &otherPlayer) {
 }
 
 
-void movePlayer1() {
+void movethisPlayer() {
 
     if (arduboy.isFrameCount(2, 0)) {
 
-        switch (player1.getMovement()) {
+        switch (thisPlayer.getMovement()) {
 
             case Movement::Up:
-                player1.decPos();
-                if (player1.getPos() == Constants::Portrait::PlayerMinPos) {
-                    player1.changeMovement(gameRotation);
+                thisPlayer.decPos();
+                if (thisPlayer.getPos() == Constants::Portrait::PlayerMinPos) {
+                    thisPlayer.changeMovement(gameRotation);
                 }
                 break;
 
             case Movement::Left:
-                player1.decPos();
-                if (player1.getPos() == Constants::Landscape::PlayerMinPos) {
-                    player1.changeMovement(gameRotation);
+                thisPlayer.decPos();
+                if (thisPlayer.getPos() == Constants::Landscape::PlayerMinPos) {
+                    thisPlayer.changeMovement(gameRotation);
                 }
                 break;
 
             case Movement::Down:
-                player1.incPos();
-                if (player1.getPos() == Constants::Portrait::PlayerMaxPos) {
-                    player1.changeMovement(gameRotation);
+                thisPlayer.incPos();
+                if (thisPlayer.getPos() == Constants::Portrait::PlayerMaxPos) {
+                    thisPlayer.changeMovement(gameRotation);
                 }
                 break;
 
             case Movement::Right:
-                player1.incPos();
-                if (player1.getPos() == Constants::Landscape::PlayerMaxPos) {
-                    player1.changeMovement(gameRotation);
+                thisPlayer.incPos();
+                if (thisPlayer.getPos() == Constants::Landscape::PlayerMaxPos) {
+                    thisPlayer.changeMovement(gameRotation);
                 }
                 break;
 
@@ -626,35 +726,43 @@ void moveBullet(Player &player) {
 
         case GameRotation::Portrait:
 
-            switch (gameMode) {
-            
-                case GameMode::Single ... GameMode::Double:
-                    player.incBulletX();
-                    break;
-            
-                case GameMode::TugOfWar:
+            #ifndef DEBUG_LANDSCAPE
+                
+                switch (gameMode) {
+                
+                    case GameMode::Single ... GameMode::Double:
+                        player.incBulletX();
+                        break;
+                
+                    case GameMode::TugOfWar:
 
-                    switch (player.getPlayerIdx()) {
+                        switch (player.getPlayerIdx()) {
 
-                        case 0:
-                            player.incBulletX();
-                            break;
+                            case 0:
+                                player.incBulletX();
+                                break;
 
-                        case 1:
-                            player.decBulletX();
-                            break;
+                            case 1:
+                                player.decBulletX();
+                                break;
 
-                    }
-                    break;
+                        }
+                        break;
 
-            }
+                }
+
+            #endif
 
             break;
 
         case GameRotation::Landscape:
-            if (arduboy.isFrameCount(2, 0)) {
-                player.decBulletY();
-            }
+
+            #ifndef DEBUG_PORTRAIT
+                if (arduboy.isFrameCount(2, 0)) {
+                    player.decBulletY();
+                }
+            #endif
+
             break;
 
     }
@@ -667,92 +775,101 @@ void moveBullet(Player &player) {
 
         case GameRotation::Portrait:
             {
-                Rect bulletRect = { player.getBulletX() + 1, player.getBulletY() +1, Constants::BulletHeight - 2, Constants::BulletWidth - 2 };
-                Rect mothershipRect = { mothership.getHeight() + 1, mothership.getPosDisplay() + 1, Constants::MothershipWidth - 2, Constants::MothershipHeight - 2 };
 
-                if (arduboy.collide(bulletRect, mothershipRect)) {
+                #ifndef DEBUG_LANDSCAPE
+                    
+                    Rect bulletRect = { player.getBulletX() + 1, player.getBulletY() +1, Constants::BulletHeight - 2, Constants::BulletWidth - 2 };
+                    Rect mothershipRect = { mothership.getHeight() + 1, mothership.getPosDisplay() + 1, Constants::MothershipWidth - 2, Constants::MothershipHeight - 2 };
 
-                    #ifdef SOUNDS
-                        sound.tones(Sounds::Enemy_Explosion);
-                    #endif
-
-
-                    launchParticles(gameRotation, mothership.getPosDisplay() + (Constants::MothershipHeight / 2), mothership.getHeight() + (Constants::MothershipWidth / 2));
-
-
-                    if (gameMode == GameMode::TugOfWar) {
-                        mothership.explode(player.getPlayerIdx() == 0 ? -Constants::TugOfWarRowAdjustment : Constants::TugOfWarRowAdjustment);
-                        gamePlayVars.waveCleared = false;
-                        mothership.decCounter();
-                    }
-                    else {
-                        mothership.explode(Constants::MothershipRowHeight);
-                        gamePlayVars.waveCleared = mothership.decCounter();
-                    }
-
-                    player.incScore();
-                    player.setBulletActive(false);
-
-                }
-
-                if (bomb.getActive()) {
-
-                    Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombHeight - 2, Constants::BombWidth - 2 };
-
-                    if (arduboy.collide(bulletRect, bombRect)) {
+                    if (arduboy.collide(bulletRect, mothershipRect)) {
 
                         #ifdef SOUNDS
-                            sound.tones(Sounds::Bomb_Explosion);
+                            sound.tones(Sounds::Enemy_Explosion);
                         #endif
 
-                        bomb.explode();
+
+                        launchParticles(gameRotation, mothership.getPosDisplay() + (Constants::MothershipHeight / 2), mothership.getHeight() + (Constants::MothershipWidth / 2));
+
+
+                        if (gameMode == GameMode::TugOfWar) {
+                            mothership.explode(player.getPlayerIdx() == 0 ? -Constants::TugOfWarRowAdjustment : Constants::TugOfWarRowAdjustment);
+                            gamePlayVars.waveCleared = false;
+                            mothership.decCounter();
+                        }
+                        else {
+                            mothership.explode(Constants::MothershipRowHeight);
+                            gamePlayVars.waveCleared = mothership.decCounter();
+                        }
+
+                        player.incScore();
                         player.setBulletActive(false);
 
                     }
-                    
-                }
+
+                    if (bomb.getActive()) {
+
+                        Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombHeight - 2, Constants::BombWidth - 2 };
+
+                        if (arduboy.collide(bulletRect, bombRect)) {
+
+                            #ifdef SOUNDS
+                                sound.tones(Sounds::Bomb_Explosion);
+                            #endif
+
+                            bomb.explode();
+                            player.setBulletActive(false);
+
+                        }
+                        
+                    }
+
+                #endif
 
             }
 
             break;
 
         case GameRotation::Landscape:
-            {        
-                Rect bulletRect = { player.getBulletX() + 1, player.getBulletY() + 1, Constants::BulletWidth - 2, Constants::BulletHeight - 2 };
-                Rect mothershipRect = { mothership.getPosDisplay() + 1, mothership.getHeight() + 1, Constants::MothershipWidth - 2, Constants::MothershipHeight - 2 };
+            {    
 
-                if (arduboy.collide(bulletRect, mothershipRect)) {
+                #ifndef DEBUG_PORTRAIT    
+                    Rect bulletRect = { player.getBulletX() + 1, player.getBulletY() + 1, Constants::BulletWidth - 2, Constants::BulletHeight - 2 };
+                    Rect mothershipRect = { mothership.getPosDisplay() + 1, mothership.getHeight() + 1, Constants::MothershipWidth - 2, Constants::MothershipHeight - 2 };
 
-                    #ifdef SOUNDS
-                        sound.tones(Sounds::Enemy_Explosion);
-                    #endif
-
-                    launchParticles(gameRotation, mothership.getPosDisplay() + (Constants::MothershipHeight / 2), mothership.getHeight() + (Constants::MothershipWidth / 2));
-
-                    mothership.explode(-Constants::MothershipRowHeight);                    
-                    gamePlayVars.waveCleared = mothership.decCounter();
-
-                    player.incScore();
-                    player.setBulletActive(false);
-
-                }
-
-                if (bomb.getActive()) {
-
-                    Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombWidth - 2, Constants::BombHeight - 2 };
-
-                    if (arduboy.collide(bulletRect, bombRect)) {
+                    if (arduboy.collide(bulletRect, mothershipRect)) {
 
                         #ifdef SOUNDS
-                            sound.tones(Sounds::Bomb_Explosion);
+                            sound.tones(Sounds::Enemy_Explosion);
                         #endif
 
-                        bomb.explode();
+                        launchParticles(gameRotation, mothership.getPosDisplay() + (Constants::MothershipHeight / 2), mothership.getHeight() + (Constants::MothershipWidth / 2));
+
+                        mothership.explode(-Constants::MothershipRowHeight);                    
+                        gamePlayVars.waveCleared = mothership.decCounter();
+
+                        player.incScore();
                         player.setBulletActive(false);
 
                     }
-                    
-                }
+
+                    if (bomb.getActive()) {
+
+                        Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombWidth - 2, Constants::BombHeight - 2 };
+
+                        if (arduboy.collide(bulletRect, bombRect)) {
+
+                            #ifdef SOUNDS
+                                sound.tones(Sounds::Bomb_Explosion);
+                            #endif
+
+                            bomb.explode();
+                            player.setBulletActive(false);
+
+                        }
+                        
+                    }
+
+                #endif
 
             }
 
@@ -772,66 +889,58 @@ void moveBomb() {
 
         case GameRotation::Portrait:
             {
-                Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombHeight - 2, Constants::BombWidth - 2 };
-                Rect player1Rect = { 0, player1.getPos() + 1, Constants::PlayerHeight - 2, Constants::PlayerWidth - 2 };
 
-                if (arduboy.collide(bombRect, player1Rect)) {
+                #ifndef DEBUG_LANDSCAPE
 
-                    bool explode = player1.explode();
+                    Rect bombRect = { bomb.getHeight() + 1, bomb.getPos() + 1, Constants::BombHeight - 2, Constants::BombWidth - 2 };
+                    Rect thisPlayerRect = { 0, thisPlayer.getPos() + 1, Constants::PlayerHeight - 2, Constants::PlayerWidth - 2 };
 
-                    #ifdef SOUNDS
-                        if (explode) {
-                            sound.tones(Sounds::Player_Hit_By_Bomb);
-                        }
-                    #endif
-                }
+                    if (arduboy.collide(bombRect, thisPlayerRect)) {
 
-                if (gameMode != GameMode::Single) {
-
-                    Rect player2Rect = { 0, player2.getPos() + 1, Constants::PlayerHeight - 2, Constants::PlayerWidth - 2 };
-
-                    if (arduboy.collide(bombRect, player2Rect)) {
-
-                        bool explode = player2.explode();
+                        bool explode = thisPlayer.explode();
 
                         #ifdef SOUNDS
                             if (explode) {
                                 sound.tones(Sounds::Player_Hit_By_Bomb);
                             }
                         #endif
+                    }
+
+                    if (gameMode != GameMode::Single) {
+
+                        Rect otherPlayerRect = { 0, otherPlayer.getPos() + 1, Constants::PlayerHeight - 2, Constants::PlayerWidth - 2 };
+
+                        if (arduboy.collide(bombRect, otherPlayerRect)) {
+
+                            bool explode = otherPlayer.explode();
+
+                            #ifdef SOUNDS
+                                if (explode) {
+                                    sound.tones(Sounds::Player_Hit_By_Bomb);
+                                }
+                            #endif
+
+                        }
 
                     }
 
-                }
+                #endif
 
             }
 
             break;
 
         case GameRotation::Landscape:
-            {        
-                Rect bombRect = { bomb.getPos() + 1, bomb.getHeight() + 1, Constants::BombWidth - 2, Constants::BombHeight - 2 };
-                Rect player1Rect = { player1.getPos() + 1, 64 - Constants::PlayerHeight + 1, Constants::PlayerWidth - 2, Constants::PlayerHeight - 1 };
+            {      
 
-                if (arduboy.collide(bombRect, player1Rect)) {
+                #ifndef DEBUG_PORTRAIT  
+                    
+                    Rect bombRect = { bomb.getPos() + 1, bomb.getHeight() + 1, Constants::BombWidth - 2, Constants::BombHeight - 2 };
+                    Rect thisPlayerRect = { thisPlayer.getPos() + 1, 64 - Constants::PlayerHeight + 1, Constants::PlayerWidth - 2, Constants::PlayerHeight - 1 };
 
-                    bool explode = player1.explode();
+                    if (arduboy.collide(bombRect, thisPlayerRect)) {
 
-                    #ifdef SOUNDS
-                        if (explode) {
-                            sound.tones(Sounds::Player_Hit_By_Bomb);
-                        }
-                    #endif
-
-                }
-
-                if (gameMode != GameMode::Single) {
-
-                    Rect player2Rect = { player2.getPos() + 1, 64 - Constants::PlayerHeight + 1, Constants::PlayerWidth - 2, Constants::PlayerHeight - 1 };
-
-                    if (arduboy.collide(bombRect, player2Rect)) {
-
-                        bool explode = player2.explode();
+                        bool explode = thisPlayer.explode();
 
                         #ifdef SOUNDS
                             if (explode) {
@@ -841,7 +950,25 @@ void moveBomb() {
 
                     }
 
-                }
+                    if (gameMode != GameMode::Single) {
+
+                        Rect otherPlayerRect = { otherPlayer.getPos() + 1, 64 - Constants::PlayerHeight + 1, Constants::PlayerWidth - 2, Constants::PlayerHeight - 1 };
+
+                        if (arduboy.collide(bombRect, otherPlayerRect)) {
+
+                            bool explode = otherPlayer.explode();
+
+                            #ifdef SOUNDS
+                                if (explode) {
+                                    sound.tones(Sounds::Player_Hit_By_Bomb);
+                                }
+                            #endif
+
+                        }
+
+                    }
+
+                #endif
 
             }
 

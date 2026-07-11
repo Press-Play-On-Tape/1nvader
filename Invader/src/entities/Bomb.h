@@ -32,17 +32,25 @@ struct Bomb {
             switch (gameRotation) {
 
                 case GameRotation::Portrait:
-                    this->height--;
-                    if (this->height < -7) {
-                        this->active = false;
-                    }
+
+                    #ifndef DEBUG_LANDSCAPE
+                        this->height--;
+                        if (this->height < -7) {
+                            this->active = false;
+                        }
+                    #endif
+                    
                     break;
 
                 case GameRotation::Landscape:
-                    this->height++;
-                    if (this->height > 71) {
-                        this->active = false;
-                    }
+
+                    #ifndef DEBUG_PORTRAIT
+                        this->height++;
+                        if (this->height > 71) {
+                            this->active = false;
+                        }
+                    #endif
+
                     break;
 
             }

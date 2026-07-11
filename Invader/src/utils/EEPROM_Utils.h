@@ -50,8 +50,8 @@ void EEPROM_Utils::initEEPROM(bool force) {
         EEPROM.put(Constants::EEPROM_Tug_Of_War, hs);
         EEPROM.put(Constants::EEPROM_Mode, mode);
         EEPROM.put(Constants::EEPROM_Rotation, rotation);
-        EEPROM.put(Constants::EEPROM_Lock_LVL_0, 0);
-        EEPROM.put(Constants::EEPROM_Lock_LVL_1, 0);
+        EEPROM.put(Constants::EEPROM_Lock_LVL_0, 1);
+        EEPROM.put(Constants::EEPROM_Lock_LVL_1, 1);
 
         EEPROM_Utils::checkSum(true);
 

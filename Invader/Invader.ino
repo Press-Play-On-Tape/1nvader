@@ -1,4 +1,7 @@
 #include "src/utils/Arduboy2Ext.h"
+#define I2C_IMPLEMENTATION
+#include <ArduboyI2C.h>
+
 #include "src/entities/Entities.h"
 #include "src/images/Images.h"
 #include "src/utils/Constants.h"
@@ -12,7 +15,7 @@
 #endif
 
 Arduboy2Ext arduboy;
-ARDUBOY_NO_USB
+// ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
@@ -25,12 +28,16 @@ Particle particles[Constants::ParticlesMax];
 
 GameState gameState = GameState::Splash_Init;
 GameMode gameMode = GameMode::Single;
-GameRotation gameRotation = GameRotation::Landscape;
 
-Player player1;
-Player player2;
+GameRotation gameRotation = GameRotation::Portrait;
+
+Player thisPlayer;
+Player otherPlayer;
 Mothership mothership;
 Bomb bomb;
+
+I2C::Role role;
+bool onReceive_Status = false;
 
 void setup() {
   
@@ -45,7 +52,9 @@ void setup() {
     arduboy.audio.begin();
     #endif
 
-   EEPROM_Utils::initEEPROM(false);
+    EEPROM_Utils::initEEPROM(false);
+
+    Serial.println("hhhhh");
 
 }   
 
@@ -77,6 +86,16 @@ void loop() {
         case GameState::Title:
 
             title();
+            break;
+
+        case GameState::Multi_Init:
+
+            multi_Init();
+            break;
+
+        case GameState::Multi:
+
+            multi();
             break;
 
         case GameState::Game_Init:
