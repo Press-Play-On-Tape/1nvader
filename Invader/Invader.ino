@@ -15,7 +15,7 @@
 #endif
 
 Arduboy2Ext arduboy;
-// ARDUBOY_NO_USB
+ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
@@ -38,6 +38,7 @@ Bomb bomb;
 
 I2C::Role role;
 bool onReceive_Status = false;
+uint8_t readAddrNackError = 10;
 
 void setup() {
   
@@ -53,8 +54,6 @@ void setup() {
     #endif
 
     EEPROM_Utils::initEEPROM(false);
-
-    Serial.println("hhhhh");
 
 }   
 

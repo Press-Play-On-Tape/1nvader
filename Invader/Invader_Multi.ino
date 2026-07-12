@@ -3,6 +3,8 @@
 
 void killGame() {
 
+    DEBUG_PRINTLN("killGame()");
+
     gameState = GameState::Title_Init; 
     I2C::end();
     role = I2C::Role::Controller;
@@ -16,7 +18,30 @@ void drawMessage(const __FlashStringHelper *message) {
 }
 
 void onReceive() {
+
     otherPlayer = *reinterpret_cast<const Player *>(I2C::getBuffer());
+
+    if (otherPlayer.getGameMode() != thisPlayer.getGameMode()) {
+
+        thisPlayer.setGameMode(otherPlayer.getGameMode());
+        thisPlayer.setGameState(otherPlayer.getGameState());
+        gameMode = otherPlayer.getGameMode();
+        gameState = otherPlayer.getGameState();
+
+        switch (thisPlayer.getGameState()) {
+        
+            case GameState::Game:
+                game_Init();
+                break;
+
+            case GameState::TugOfWar:
+                tugOfWar_Init();
+                break;
+
+        }
+
+    }
+
     onReceive_Status = true;
 }
 
@@ -27,7 +52,8 @@ void onRequest() {
 void exitMenu() {
     
     if (arduboy.pressed(A_BUTTON)) {
-       killGame(); 
+        DEBUG_PRINTLN("exitMenu() -> killGame()");
+        killGame(); 
     }
 
 }
@@ -88,18 +114,7 @@ void multi_Init() {
 
 }   
 
-
 void multi() {
-
-
-    
-    // if (arduboy.justPressed(B_BUTTON)) {
-
-    //     gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
-    //     gameState = GameState::Title_Init;
-    //     EEPROM_Utils::saveRotation(gameRotation);
-
-    // }
 
     switch (gameRotation) {
 
@@ -114,14 +129,11 @@ void multi() {
                 // if we're the target (slave), set up the receive and request callbacks
                 if (role == I2C::Role::Target) {
 
-                    // Serial.println("I am the Target.");
                     I2C::onReceive(onReceive);
                     I2C::onRequest(onRequest);
 
                 }
                 else {
-
-                    // Serial.println("I am the Controller.");
 
                 }
 
@@ -140,14 +152,11 @@ void multi() {
                 // if we're the target (slave), set up the receive and request callbacks
                 if (role == I2C::Role::Target) {
 
-                    // Serial.println("I am the Target.");
                     I2C::onReceive(onReceive);
                     I2C::onRequest(onRequest);
 
                 }
                 else {
-
-                    // Serial.println("I am the Controller.");
 
                 }
 

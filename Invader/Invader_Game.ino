@@ -3,6 +3,7 @@
 void game_Init() {
 
     gameState = GameState::Game;
+    readAddrNackError = 10;
 
     mothership.reset(gameRotation, gameRotation == GameRotation::Landscape ? -Constants::MothershipRowHeight : Constants::MothershipRowHeight);
     gamePlayVars.bombCounter = random(256, 1024);
@@ -108,6 +109,7 @@ void game_Init() {
 void game() {
 
     if (arduboy.justPressed(B_BUTTON)) { 
+        DEBUG_PRINTLN("game() -> killGame(A)");
         killGame();
         return;
     }
@@ -118,15 +120,19 @@ void game() {
     if (gameMode != GameMode::Single) {
         
         if (role == I2C::Role::Controller) {
-    // Serial.print("Oth: ");
-    // Serial.print(otherPlayer.getPos());
+
             I2C::read(I2C::targetAddress, otherPlayer);
-    // Serial.print(" > ");
-    // Serial.println(otherPlayer.getPos());
 
             if (I2C::getError() == I2C::Error::ReadAddrNack) {
-                killGame();
-                return;
+
+                if (readAddrNackError > 0) {
+                    readAddrNackError--;
+                }
+                else {
+                    DEBUG_PRINTLN("game() -> killGame(B)");
+                    killGame();
+                    return;
+                }
             }
 
             I2C::write(I2C::targetAddress, thisPlayer, I2C::Mode::Async);
@@ -135,8 +141,8 @@ void game() {
         else {
 
             if (!onReceive_Status) {
+                DEBUG_PRINTLN("game() -> killGame(C)");
                 killGame();
-                return;
             }
 
             onReceive_Status = false;
@@ -178,8 +184,6 @@ void game() {
 
         if (!thisPlayer.getBeingPushed()) {
 
-            // if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON) ||
-            //     ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Single)) {
             if (arduboy.justPressed(A_BUTTON)) {
                 bool fired = thisPlayer.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &otherPlayer : nullptr));
 
@@ -191,35 +195,11 @@ void game() {
 
         }
 
-        // if (!otherPlayer.getBeingPushed()) {
-
-        //     if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) && gameMode == GameMode::Double) {
-
-        //         bool fired = otherPlayer.fire(gameRotation, gameMode, (gameMode == GameMode::Double ? &thisPlayer : nullptr));
-
-        //         #ifdef SOUNDS
-        //             if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-        //         #endif
-
-        //     }
-
-        // }
-
-
         if (gameMode == GameMode::Double) {
 
-            // if (role == I2C::Role::Controller) {
-
-// Serial.print("Move ");
-// Serial.print(otherPlayer.getPos());                
-                movePlayer(thisPlayer, otherPlayer);
-                movePlayer(otherPlayer, thisPlayer);
-
-// Serial.print(" > ");
-// Serial.println(otherPlayer.getPos());                
-
-                mothership.move(gameRotation, gameMode, thisPlayer, otherPlayer);
-            // }
+            movePlayer(thisPlayer, otherPlayer);
+            movePlayer(otherPlayer, thisPlayer);
+            mothership.move(gameRotation, gameMode, thisPlayer, otherPlayer);
 
         }
         else {

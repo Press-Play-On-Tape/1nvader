@@ -138,18 +138,18 @@ void renderScoreTugOfWar(uint16_t score1, uint16_t score2) {
     extractDigits(digits, score2);
 
 
-    uint8_t location = 1;
+    uint8_t location = 3;
     for (uint8_t j = 4; j > 0; --j, location += 4) {
 
-        Sprites::drawSelfMasked(113, location, Images::Portrait::Normal::Numbers, digits[j - 1]);
+        Sprites::drawSelfMasked(116, location, Images::Portrait::Normal::Numbers, digits[j - 1]);
 
     }
 
     extractDigits(digits, score1);
-    location = 48;
+    location = 46;
     for (uint8_t j = 4; j > 0; --j, location += 4) {
 
-        Sprites::drawSelfMasked(113, location, Images::Portrait::Normal::Numbers, digits[j - 1]);
+        Sprites::drawSelfMasked(116, location, Images::Portrait::Normal::Numbers, digits[j - 1]);
 
     }
 

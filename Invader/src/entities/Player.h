@@ -14,7 +14,10 @@ struct Player {
         uint16_t score = 0;
         bool bulletActive = false;
         bool beingPushed = false;
+
         Movement movement = Movement::Up;
+        GameState gameState = GameState::Game;
+        GameMode gameMode = GameMode::Single;
 
 
     public:
@@ -27,7 +30,10 @@ struct Player {
         uint8_t getExplosionCounter()                       { return this->explodeCounter; }
         bool getBulletActive()                              { return this->bulletActive; }
         bool getBeingPushed()                               { return this->beingPushed; }
+
         Movement getMovement()                              { return this->movement; }
+        GameState getGameState()                            { return this->gameState; }
+        GameMode getGameMode()                              { return this->gameMode; }
 
         void setPos(int8_t val)                             { this->pos = val; }
         void setPlayerIdx(uint8_t val)                      { this->playerIdx = val; }
@@ -36,7 +42,10 @@ struct Player {
         void setScore(uint16_t val)                         { this->score = val; }
         void setBulletActive(bool val)                      { this->bulletActive = val; }
         void setBeingPushed(bool val)                       { this->beingPushed = val; }
+
         void setMovement(Movement val)                      { this->movement = val; }
+        void setGameMode(GameMode val)                      { this->gameMode = val; }
+        void setGameState(GameState val)                    { this->gameState = val; }
 
     public:
 
@@ -105,7 +114,7 @@ struct Player {
                                         break;
 
                                     case 1:
-                                        this->bulletX = 112;
+                                        this->bulletX = 120;
                                         this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
                                         this->bulletActive = true;
                                         changeMovement(gameRotation);

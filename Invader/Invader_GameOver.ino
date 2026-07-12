@@ -2,6 +2,8 @@
 
 void gameOver_Init() {
 
+    killGame();
+
     gameState = GameState::GameOver;
     gameOverScreenVars.reset();
 
@@ -107,7 +109,6 @@ void gameOver() {
 
     if (arduboy.justPressed(A_BUTTON)) { 
 
-        killGame();
         gameState = GameState::Title_Init;
 
     }

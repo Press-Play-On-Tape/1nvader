@@ -3,8 +3,14 @@
 // - Debug ------------------------------
 
 #define _DEBUG
-#define DEBUG_PORTRAIT
+
+#define _DEBUG_PRINT    Serial.print
+#define _DEBUG_PRINTLN  Serial.println
+#define DEBUG_PRINT    void
+#define DEBUG_PRINTLN  void
+#define _DEBUG_PORTRAIT
 #define _DEBUG_LANDSCAPE
+#define DEBUG_BREAK    asm volatile("break\n");
 #define SOUNDS
 
 // ---------------------------------------

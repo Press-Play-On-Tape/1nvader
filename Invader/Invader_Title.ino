@@ -1,5 +1,5 @@
 #include <Arduboy2.h>
-
+#include "src/utils/Constants.h"
 
 void title_Init() {
 
@@ -71,17 +71,25 @@ void title() {
 
                             case GameMode::Single:
                                 gameState = GameState::Game_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
                                 gameState = GameState::Multi_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
                                 gameState = GameState::Multi_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
+
+                        thisPlayer.setGameMode(gameMode);
 
                         break;
                         
@@ -145,10 +153,14 @@ void title() {
 
                             case GameMode::Single:
                                 gameState = GameState::Game_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
                                 gameState = GameState::Multi_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
@@ -160,6 +172,8 @@ void title() {
                                 }
                                 
                                 gameState = GameState::Multi_Init;
+                                thisPlayer.setGameMode(gameMode);
+                                thisPlayer.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
@@ -215,7 +229,7 @@ void renderPlayerSelection(bool renderPlayerSelection) {
                 if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(46, 5, Images::Portrait::Lock, 0);
 
             #endif
-            
+
             break;
 
         case GameRotation::Landscape:
