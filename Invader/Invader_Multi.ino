@@ -122,20 +122,22 @@ void multi() {
 
             #ifndef DEBUG_LANDSCAPE
 
-                I2C::begin();
-                I2C::checkCableFlipped(flipCable);
-                role = I2C::handshake(waitForOther, exitMenu);
+            I2C::begin();
+            I2C::checkCableFlipped(flipCable);
+            role = I2C::handshake(waitForOther, exitMenu);
 
-                // if we're the target (slave), set up the receive and request callbacks
-                if (role == I2C::Role::Target) {
+            // if we're the target (slave), set up the receive and request callbacks
+            if (role == I2C::Role::Target) {
 
-                    I2C::onReceive(onReceive);
-                    I2C::onRequest(onRequest);
+                DEBUG_PRINTLN("I am the Target");
+                I2C::onReceive(onReceive);
+                I2C::onRequest(onRequest);
+                onReceive_Status = true;
 
-                }
-                else {
-
-                }
+            }
+            else {
+                DEBUG_PRINTLN("I am the Controller");
+            }
 
             #endif
 
@@ -152,12 +154,14 @@ void multi() {
                 // if we're the target (slave), set up the receive and request callbacks
                 if (role == I2C::Role::Target) {
 
+                    DEBUG_PRINTLN("I am the Target");
                     I2C::onReceive(onReceive);
                     I2C::onRequest(onRequest);
+                    onReceive_Status = true;
 
                 }
                 else {
-
+                    DEBUG_PRINTLN("I am the Controller");
                 }
 
             #endif

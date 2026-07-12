@@ -115,7 +115,13 @@ void loop() {
             break;
 
         case GameState::TugOfWar:
-
+            arduboy.setCursor(56,0);
+            if (role == I2C::Role::Controller) {
+                arduboy.print("L L");
+            }
+            else {
+                arduboy.print("R R");
+            }
             tugOfWar();
             break;
             
