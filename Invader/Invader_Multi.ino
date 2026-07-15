@@ -47,6 +47,7 @@ void onReceive() {
 
 void onRequest() {
     I2C::reply(thisPlayer);
+    onRequest_Status = true;
 }
 
 void exitMenu() {

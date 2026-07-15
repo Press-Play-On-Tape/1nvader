@@ -15,7 +15,7 @@
 #endif
 
 Arduboy2Ext arduboy;
-// ARDUBOY_NO_USB
+ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
@@ -37,7 +37,8 @@ Mothership mothership;
 Bomb bomb;
 
 I2C::Role role;
-bool onReceive_Status = false;
+volatile bool onReceive_Status = false;
+volatile bool onRequest_Status = false;
 uint8_t readAddrNackError = 10;
 
 void setup() {
@@ -115,13 +116,13 @@ void loop() {
             break;
 
         case GameState::TugOfWar:
-            arduboy.setCursor(56,0);
-            if (role == I2C::Role::Controller) {
-                arduboy.print("L L");
-            }
-            else {
-                arduboy.print("R R");
-            }
+            // arduboy.setCursor(56,0);
+            // if (role == I2C::Role::Controller) {
+            //     arduboy.print("L L");
+            // }
+            // else {
+            //     arduboy.print("R R");
+            // }
             tugOfWar();
             break;
             

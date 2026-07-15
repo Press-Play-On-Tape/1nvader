@@ -67,6 +67,31 @@ void tugOfWar() {
     }  
     else {
 
+        // uint8_t x = 0;
+        // I2C::setAddress(I2C::targetAddress);
+        // // wait for the controller (master) to send us its input
+        // while (!onReceive_Status) { 
+        // DEBUG_BREAK
+        //     x++;
+        //     if (x == 255) {
+        //     DEBUG_PRINTLN("tugOfWar() -> killGame(C)");
+        //     killGame();
+        //     return;            
+        //     }
+        // }
+        // // store the controller's input and reset the flag
+        // // rightInput = controllerInput;
+        // onReceive_Status = false;
+
+        // // wait for the controller (master) to request our input
+        // while (!onRequest_Status) { }
+        // // reset the flag
+        // onRequest_Status = false;
+        // // set our address to the null address; we're done
+        // // otherwise the controller may get ahead of us and request our input again before we have a chance to update it
+        // // thus destroying our synchronization
+        // I2C::setAddress(I2C::nullAddress);
+
         if (!onReceive_Status) {
             DEBUG_PRINTLN("tugOfWar() -> killGame(C)");
             killGame();
