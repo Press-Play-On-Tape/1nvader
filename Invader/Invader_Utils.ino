@@ -1,9 +1,9 @@
 #include "src/utils/Arduboy2Ext.h"
 #include "src/utils/Utils.h"
 
-void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
+void renderScores(bool flashcontrolPlayer, bool flashtargetPlayer) {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     switch (gameRotation) {
 
@@ -11,12 +11,12 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
             #ifndef DEBUG_LANDSCAPE
                 
-                switch (thisState.getGameMode()) {
+                switch (controlState.getGameMode()) {
                     
                     case GameMode::Single:
 
-                        if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                            renderScore(16, 121, thisPlayer.getScore());
+                        if (!flashcontrolPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                            renderScore(16, 121, controlPlayer.getScore());
                         }
 
                         Sprites::drawOverwrite(121, 41, Images::Portrait::Normal::Numbers, mothership.getCounter() / 10);
@@ -26,12 +26,12 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
                     case GameMode::Double:
 
-                        if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                            renderScore(3, 121, thisPlayer.getScore());
+                        if (!flashcontrolPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                            renderScore(3, 121, controlPlayer.getScore());
                         }
 
-                        if (!flashotherPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                            renderScore(46, 121, otherPlayer.getScore());
+                        if (!flashtargetPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                            renderScore(46, 121, targetPlayer.getScore());
                         }
 
                         Sprites::drawOverwrite(121, 28, Images::Portrait::Normal::Numbers, mothership.getCounter() / 10);
@@ -41,12 +41,12 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
                     
                     case GameMode::TugOfWar:
 
-                        if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                            renderScore(3, 116, thisPlayer.getScore());
+                        if (!flashcontrolPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                            renderScore(3, 116, controlPlayer.getScore());
                         }
 
-                        if (!flashotherPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                            renderScore(46, 116, otherPlayer.getScore());
+                        if (!flashtargetPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                            renderScore(46, 116, targetPlayer.getScore());
                         }
 
                         break;
@@ -61,14 +61,14 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
             #ifndef DEBUG_PORTRAIT                
                 
-                if (thisState.getGameMode() == GameMode::Double) {
+                if (controlState.getGameMode() == GameMode::Double) {
 
-                    if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                        renderScore(36, 0, thisPlayer.getScore());
+                    if (!flashcontrolPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                        renderScore(36, 0, controlPlayer.getScore());
                     }
 
-                    if (!flashotherPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                        renderScore(100, 0, otherPlayer.getScore());
+                    if (!flashtargetPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                        renderScore(100, 0, targetPlayer.getScore());
                     }
 
                     Sprites::drawOverwrite(61, 0, Images::Landscape::Numbers, mothership.getCounter() / 10);
@@ -77,8 +77,8 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
                 }
                 else {
 
-                    if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                        renderScore(36, 0, thisPlayer.getScore());
+                    if (!flashcontrolPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
+                        renderScore(36, 0, controlPlayer.getScore());
                     }
 
                     Sprites::drawOverwrite(91, 0, Images::Landscape::Numbers, mothership.getCounter() / 10);
@@ -96,7 +96,7 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
 void renderScore(uint8_t location, uint8_t height, uint16_t score) {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
     uint8_t digits[4] = {};
 
     extractDigits(digits, score);
@@ -191,7 +191,7 @@ void renderSceneryPortrait(bool renderStars) {
 
 void renderScenery(GameMode gameMode, bool renderStars) {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     switch (gameRotation) {
 
@@ -279,7 +279,7 @@ void renderHighScore(GameMode gameMode, bool centre) {
 
     uint8_t digits[4] = {};
     uint16_t score = EEPROM_Utils::getScore(gameMode);
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     extractDigits(digits, score);
 
@@ -327,7 +327,7 @@ void renderHighScore(GameMode gameMode, bool centre) {
 
 void renderInvaderSign() {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     switch (gameRotation) {
 

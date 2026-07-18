@@ -85,7 +85,7 @@ struct Player {
 
         }
 
-        bool fire(GameRotation gameRotation, GameMode gameMode, Player* otherPlayer) {
+        bool fire(GameRotation gameRotation, GameMode gameMode, Player* targetPlayer) {
 
             if (this->bulletActive) return false;
 
@@ -102,7 +102,7 @@ struct Player {
                                 this->bulletX = 4;
                                 this->bulletY = this->pos + 3 + (this->movement == Movement::Up ? 1 : 0);
                                 this->bulletActive = true;
-                                if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
+                                if (!this->arePlayersTouching(targetPlayer)) changeMovement(gameRotation);
                                 break;
 
                             case GameMode::TugOfWar:
@@ -139,7 +139,7 @@ struct Player {
                         this->bulletX = this->pos + 3;
                         this->bulletY = 55;
                         this->bulletActive = true;
-                        if (!this->arePlayersTouching(otherPlayer)) changeMovement(gameRotation);
+                        if (!this->arePlayersTouching(targetPlayer)) changeMovement(gameRotation);
                     #endif
 
                     break;
@@ -151,19 +151,19 @@ struct Player {
         }
 
 
-        bool arePlayersTouching(Player* otherPlayer) {
+        bool arePlayersTouching(Player* targetPlayer) {
 
-            if (otherPlayer == nullptr) return false;
+            if (targetPlayer == nullptr) return false;
 
             switch (this->getPlayerIdx()) {
 
                 case 0:
 
-                    return (this->getPos() + Constants::PlayerWidthNoMask >= otherPlayer->getPos() - Constants::MaskWidth);
+                    return (this->getPos() + Constants::PlayerWidthNoMask >= targetPlayer->getPos() - Constants::MaskWidth);
 
                 case 1:
 
-                    return (this->getPos() <= otherPlayer->getPos() - Constants::MaskWidth + Constants::PlayerWidthNoMask);
+                    return (this->getPos() <= targetPlayer->getPos() - Constants::MaskWidth + Constants::PlayerWidthNoMask);
 
             }
 

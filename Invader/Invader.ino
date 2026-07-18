@@ -1,4 +1,5 @@
 #include "src/utils/Arduboy2Ext.h"
+#define I2C_BUFFER_CAPACITY 44
 #define I2C_IMPLEMENTATION
 #include <ArduboyI2C.h>
 
@@ -25,14 +26,14 @@ TitleScreenVars titleScreenVars;
 GameOverScreenVars gameOverScreenVars;
 Particle particles[Constants::ParticlesMax];
 
-State thisState;
-State otherState;
+State controlState;
+State targetState;
 
-Player &thisPlayer          = thisState.thisPlayer;
-Player &otherPlayer         = thisState.otherPlayer;
-Mothership &mothership      = thisState.mothership;
-Bomb &bomb                  = thisState.bomb;
-GamePlayVars &gamePlayVars  = thisState.gamePlayVars;
+Player &controlPlayer       = controlState.controlPlayer;
+Player &targetPlayer        = controlState.targetPlayer;
+Mothership &mothership      = controlState.mothership;
+GamePlayVars &gamePlayVars  = controlState.gamePlayVars;
+Bomb &bomb                  = controlState.bomb;
 
 I2C::Role role;
 volatile bool onReceive_Status = false;
@@ -54,9 +55,9 @@ void setup() {
 
     EEPROM_Utils::initEEPROM(false);
 
-    thisState.setGameState(GameState::Splash_Init);
-    thisState.setGameMode(GameMode::Single);
-    thisState.setGameRotation(GameRotation::Portrait);
+    controlState.setGameState(GameState::Splash_Init);
+    controlState.setGameMode(GameMode::Single);
+    controlState.setGameRotation(GameRotation::Portrait);
 
 }   
 
@@ -66,7 +67,7 @@ void loop() {
     if ( !arduboy.nextFrame() ) return;    
 	arduboy.pollButtons();
 
-    switch (thisState.getGameState()) {
+    switch (controlState.getGameState()) {
 
         case GameState::Splash_Init:
 
@@ -109,6 +110,13 @@ void loop() {
         case GameState::Game:
 
             game();
+            arduboy.setCursor(56,0);
+            if (role == I2C::Role::Controller) {
+                arduboy.print("C");
+            }
+            else {
+                arduboy.print("T");
+            }            
             break;
 
         case GameState::TugOfWar_Init:

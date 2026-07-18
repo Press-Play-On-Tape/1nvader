@@ -8,7 +8,7 @@ static constexpr uint8_t ppotFrames = (1.6 *60); // 1.6s animation loop
 //
 void splashScreen_Init() {
 
-    thisState.setGameState(GameState::Splash);
+    controlState.setGameState(GameState::Splash);
 
 }
 
@@ -19,11 +19,11 @@ void splashScreen_Init() {
 void splashScreen() { 
 
     auto justPressed = arduboy.justPressedButtons();
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     if (justPressed > 0) {
 
-        thisState.setGameState(GameState::Title_Init);
+        controlState.setGameState(GameState::Title_Init);
 
     }
 

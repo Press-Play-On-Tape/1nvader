@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../utils/Arduboy2Ext.h"
 #include "../utils/Constants.h"
 #include "Player.h"
 #include "Mothership.h"
@@ -15,8 +16,8 @@ struct State {
 
     public:
         GamePlayVars gamePlayVars;
-        Player thisPlayer;
-        Player otherPlayer;
+        Player controlPlayer;
+        Player targetPlayer;
         Mothership mothership;
         Bomb bomb;
 
@@ -29,18 +30,6 @@ struct State {
         void setGameMode(GameMode val)                      { this->gameMode = val; }
         void setGameState(GameState val)                    { this->gameState = val; }
         void setGameRotation(GameRotation val)              { this->gameRotation = val; }
-
-        void incGameState() {
-        
-            this->gameState = static_cast<GameState>(static_cast<uint8_t>(this->gameState) + 1);
-
-        }
-
-        void decGameState() {
-        
-            this->gameState = static_cast<GameState>(static_cast<uint8_t>(this->gameState) - 1);
-
-        }
 
         void incGameMode() {
         

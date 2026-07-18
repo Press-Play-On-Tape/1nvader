@@ -2,9 +2,9 @@
 
 void tugOfWar_Init() {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
-    thisState.setGameState(GameState::TugOfWar);
+    controlState.setGameState(GameState::TugOfWar);
     readAddrNackError = 10;
 
     mothership.reset(gameRotation, 0);
@@ -12,24 +12,24 @@ void tugOfWar_Init() {
 
     if (role == I2C::Role::Controller) {
 
-        thisPlayer.reset(0);
-        thisPlayer.setPos(45);
-        thisPlayer.setMovement(Movement::Up);
+        controlPlayer.reset(0);
+        controlPlayer.setPos(45);
+        controlPlayer.setMovement(Movement::Up);
 
-        otherPlayer.reset(1);
-        otherPlayer.setPos(25);
-        otherPlayer.setMovement(Movement::Down);
+        targetPlayer.reset(1);
+        targetPlayer.setPos(25);
+        targetPlayer.setMovement(Movement::Down);
 
     }
     else {
     
-        thisPlayer.reset(1);
-        thisPlayer.setPos(25);
-        thisPlayer.setMovement(Movement::Down);
+        controlPlayer.reset(1);
+        controlPlayer.setPos(25);
+        controlPlayer.setMovement(Movement::Down);
 
-        otherPlayer.reset(0);
-        otherPlayer.setPos(45);
-        otherPlayer.setMovement(Movement::Up);
+        targetPlayer.reset(0);
+        targetPlayer.setPos(45);
+        targetPlayer.setMovement(Movement::Up);
 
     }
 
@@ -39,7 +39,7 @@ void tugOfWar_Init() {
 
 void tugOfWar() {
 
-    GameRotation gameRotation = thisState.getGameRotation();
+    GameRotation gameRotation = controlState.getGameRotation();
 
     if (arduboy.justPressed(B_BUTTON)) { 
         DEBUG_PRINTLN("tugOfWar() -> killGame(A)");
@@ -51,7 +51,7 @@ void tugOfWar() {
    
     if (role == I2C::Role::Controller) {
 
-        I2C::read(I2C::targetAddress, otherPlayer);
+        I2C::read(I2C::targetAddress, targetPlayer);
 
         if (I2C::getError() == I2C::Error::ReadAddrNack) {
 
@@ -66,7 +66,7 @@ void tugOfWar() {
 
         }
         
-        I2C::write(I2C::targetAddress, thisPlayer, I2C::Mode::Async);
+        I2C::write(I2C::targetAddress, controlPlayer, I2C::Mode::Async);
 
     }  
     else {
@@ -111,7 +111,7 @@ void tugOfWar() {
     // if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON)) {
     if (arduboy.justPressed(A_BUTTON) ) {
 
-        bool fired = thisPlayer.fire(gameRotation, thisState.getGameMode(), nullptr);
+        bool fired = controlPlayer.fire(gameRotation, controlState.getGameMode(), nullptr);
 
         #ifdef SOUNDS
             if (fired) sound.tones(Sounds::Player_Fires_Bullet);
@@ -121,7 +121,7 @@ void tugOfWar() {
 
     // if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON))) {
 
-    //      bool fired = otherPlayer.fire(gameRotation, gameMode, nullptr);
+    //      bool fired = targetPlayer.fire(gameRotation, gameMode, nullptr);
 
     //     #ifdef SOUNDS
     //         if (fired) sound.tones(Sounds::Player_Fires_Bullet);
@@ -129,12 +129,12 @@ void tugOfWar() {
 
     // }
     
-    movePlayer(thisPlayer, otherPlayer);
-    movePlayer(otherPlayer, thisPlayer);
-    mothership.moveTugOfWar(thisPlayer, otherPlayer);
+    movePlayer(controlPlayer, targetPlayer);
+    movePlayer(targetPlayer, controlPlayer);
+    mothership.moveTugOfWar(controlPlayer, targetPlayer);
 
-    if (thisPlayer.getBulletActive())      moveBullet(thisPlayer); 
-    if (otherPlayer.getBulletActive())     moveBullet(otherPlayer);
+    if (controlPlayer.getBulletActive())      moveBullet(controlPlayer); 
+    if (targetPlayer.getBulletActive())     moveBullet(targetPlayer);
 
 
 
@@ -147,13 +147,13 @@ void tugOfWar() {
 
             case Movement::Up:
                 if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
-                    thisState.setGameState(GameState::GameOver_Init);
+                    controlState.setGameState(GameState::GameOver_Init);
                 }
                 break;
 
             case Movement::Down:
                 if (mothership.getPosDisplay() > HEIGHT) {
-                    thisState.setGameState(GameState::GameOver_Init);
+                    controlState.setGameState(GameState::GameOver_Init);
                 }
                 break;
 
@@ -164,39 +164,39 @@ void tugOfWar() {
     }
        
 
-    renderScenery(thisState.getGameMode() , true);
-    renderScoreTugOfWar(otherPlayer.getScore(), thisPlayer.getScore());
+    renderScenery(controlState.getGameMode() , true);
+    renderScoreTugOfWar(targetPlayer.getScore(), controlPlayer.getScore());
 
     // if (role == I2C::Role::Controller) {
     //     arduboy.setCursor(0,0);
     //     arduboy.print("This:");
-    //     arduboy.print(thisPlayer.getPos());
+    //     arduboy.print(controlPlayer.getPos());
     //     arduboy.print(" Other:");
-    //     arduboy.print(otherPlayer.getPos());
+    //     arduboy.print(targetPlayer.getPos());
     // }
     // else {
     //     arduboy.setCursor(0,0);
     //     arduboy.print("This:");
-    //     arduboy.print(thisPlayer.getPos());
+    //     arduboy.print(controlPlayer.getPos());
     //     arduboy.print(" Other:");
-    //     arduboy.print(otherPlayer.getPos());
+    //     arduboy.print(targetPlayer.getPos());
     // }
 
     updateAndRenderParticles(GameRotation::Landscape);
 
-    Sprites::drawExternalMask(0, thisPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
+    Sprites::drawExternalMask(0, controlPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
 
-    if (thisPlayer.getExplosionCounter() > 0) {
+    if (controlPlayer.getExplosionCounter() > 0) {
 
-        Sprites::drawSelfMasked(0, thisPlayer.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - thisPlayer.getExplosionCounter()) / 2);
+        Sprites::drawSelfMasked(0, controlPlayer.getPos() - 4, Images::Portrait::Normal::Player_Explosion, (6 - controlPlayer.getExplosionCounter()) / 2);
 
     }
 
-    Sprites::drawExternalMask(120, otherPlayer.getPos(), Images::Portrait::Rotated::Player, Images::Portrait::Rotated::Player_Mask, 0, 0);
+    Sprites::drawExternalMask(120, targetPlayer.getPos(), Images::Portrait::Rotated::Player, Images::Portrait::Rotated::Player_Mask, 0, 0);
 
-    if (otherPlayer.getExplosionCounter() > 0) {
+    if (targetPlayer.getExplosionCounter() > 0) {
 
-        Sprites::drawSelfMasked(120, otherPlayer.getPos() - 4, Images::Portrait::Rotated::Player_Explosion, (6 - otherPlayer.getExplosionCounter()) / 2);
+        Sprites::drawSelfMasked(120, targetPlayer.getPos() - 4, Images::Portrait::Rotated::Player_Explosion, (6 - targetPlayer.getExplosionCounter()) / 2);
 
     }
 
@@ -225,8 +225,8 @@ void tugOfWar() {
 
         }
 
-        if (thisPlayer.getBulletActive())   Sprites::drawExternalMask(thisPlayer.getBulletX(), thisPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-        if (otherPlayer.getBulletActive())  Sprites::drawExternalMask(otherPlayer.getBulletX(), 64 - 7 - otherPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (controlPlayer.getBulletActive())   Sprites::drawExternalMask(controlPlayer.getBulletX(), controlPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (targetPlayer.getBulletActive())  Sprites::drawExternalMask(targetPlayer.getBulletX(), 64 - 7 - targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
 
     }
     else {
@@ -254,8 +254,8 @@ void tugOfWar() {
 
         }
 
-        if (thisPlayer.getBulletActive())  Sprites::drawExternalMask(120 - thisPlayer.getBulletX(), thisPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-        if (otherPlayer.getBulletActive())  Sprites::drawExternalMask(120 - otherPlayer.getBulletX(), otherPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (controlPlayer.getBulletActive())  Sprites::drawExternalMask(120 - controlPlayer.getBulletX(), controlPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (targetPlayer.getBulletActive())  Sprites::drawExternalMask(120 - targetPlayer.getBulletX(), targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
 
     }
 
