@@ -15,7 +15,7 @@
 #endif
 
 Arduboy2Ext arduboy;
-ARDUBOY_NO_USB
+// ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
@@ -23,18 +23,16 @@ ArduboyTones sound(arduboy.audio.enabled);
 
 TitleScreenVars titleScreenVars;
 GameOverScreenVars gameOverScreenVars;
-GamePlayVars gamePlayVars;
 Particle particles[Constants::ParticlesMax];
 
-GameState gameState = GameState::Splash_Init;
-GameMode gameMode = GameMode::Single;
+State thisState;
+State otherState;
 
-GameRotation gameRotation = GameRotation::Portrait;
-
-Player thisPlayer;
-Player otherPlayer;
-Mothership mothership;
-Bomb bomb;
+Player &thisPlayer          = thisState.thisPlayer;
+Player &otherPlayer         = thisState.otherPlayer;
+Mothership &mothership      = thisState.mothership;
+Bomb &bomb                  = thisState.bomb;
+GamePlayVars &gamePlayVars  = thisState.gamePlayVars;
 
 I2C::Role role;
 volatile bool onReceive_Status = false;
@@ -56,6 +54,10 @@ void setup() {
 
     EEPROM_Utils::initEEPROM(false);
 
+    thisState.setGameState(GameState::Splash_Init);
+    thisState.setGameMode(GameMode::Single);
+    thisState.setGameRotation(GameRotation::Portrait);
+
 }   
 
 
@@ -64,7 +66,7 @@ void loop() {
     if ( !arduboy.nextFrame() ) return;    
 	arduboy.pollButtons();
 
-    switch (gameState) {
+    switch (thisState.getGameState()) {
 
         case GameState::Splash_Init:
 

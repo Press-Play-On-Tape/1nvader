@@ -16,8 +16,8 @@ struct Player {
         bool beingPushed = false;
 
         Movement movement = Movement::Up;
-        GameState gameState = GameState::Game;
-        GameMode gameMode = GameMode::Single;
+        // GameState gameState = GameState::Game;
+        // GameMode gameMode = GameMode::Single;
 
 
     public:
@@ -32,8 +32,6 @@ struct Player {
         bool getBeingPushed()                               { return this->beingPushed; }
 
         Movement getMovement()                              { return this->movement; }
-        GameState getGameState()                            { return this->gameState; }
-        GameMode getGameMode()                              { return this->gameMode; }
 
         void setPos(int8_t val)                             { this->pos = val; }
         void setPlayerIdx(uint8_t val)                      { this->playerIdx = val; }
@@ -44,8 +42,7 @@ struct Player {
         void setBeingPushed(bool val)                       { this->beingPushed = val; }
 
         void setMovement(Movement val)                      { this->movement = val; }
-        void setGameMode(GameMode val)                      { this->gameMode = val; }
-        void setGameState(GameState val)                    { this->gameState = val; }
+
 
     public:
 

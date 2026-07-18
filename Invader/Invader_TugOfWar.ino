@@ -2,7 +2,9 @@
 
 void tugOfWar_Init() {
 
-    gameState = GameState::TugOfWar;
+    GameRotation gameRotation = thisState.getGameRotation();
+
+    thisState.setGameState(GameState::TugOfWar);
     readAddrNackError = 10;
 
     mothership.reset(gameRotation, 0);
@@ -36,6 +38,8 @@ void tugOfWar_Init() {
 }   
 
 void tugOfWar() {
+
+    GameRotation gameRotation = thisState.getGameRotation();
 
     if (arduboy.justPressed(B_BUTTON)) { 
         DEBUG_PRINTLN("tugOfWar() -> killGame(A)");
@@ -107,7 +111,7 @@ void tugOfWar() {
     // if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON)) {
     if (arduboy.justPressed(A_BUTTON) ) {
 
-        bool fired = thisPlayer.fire(gameRotation, gameMode, nullptr);
+        bool fired = thisPlayer.fire(gameRotation, thisState.getGameMode(), nullptr);
 
         #ifdef SOUNDS
             if (fired) sound.tones(Sounds::Player_Fires_Bullet);
@@ -143,13 +147,13 @@ void tugOfWar() {
 
             case Movement::Up:
                 if (mothership.getPosDisplay() < -Constants::MothershipHeight) {
-                    gameState = GameState::GameOver_Init;
+                    thisState.setGameState(GameState::GameOver_Init);
                 }
                 break;
 
             case Movement::Down:
                 if (mothership.getPosDisplay() > HEIGHT) {
-                    gameState = GameState::GameOver_Init;
+                    thisState.setGameState(GameState::GameOver_Init);
                 }
                 break;
 
@@ -160,7 +164,7 @@ void tugOfWar() {
     }
        
 
-    renderScenery(gameMode, true);
+    renderScenery(thisState.getGameMode() , true);
     renderScoreTugOfWar(otherPlayer.getScore(), thisPlayer.getScore());
 
     // if (role == I2C::Role::Controller) {

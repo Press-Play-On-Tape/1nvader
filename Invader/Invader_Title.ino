@@ -3,7 +3,9 @@
 
 void title_Init() {
 
-    gameState = GameState::Title;
+    GameRotation gameRotation = thisState.getGameRotation();
+
+    thisState.setGameState(GameState::Title);
     titleScreenVars.reset(gameRotation);
 
     #ifdef SOUNDS
@@ -22,13 +24,15 @@ void title_Init() {
 
 void title() {
 
+    GameRotation gameRotation = thisState.getGameRotation();
+
     renderScenery(GameMode::Single, true);
-    renderHighScore(gameMode, false);
+    renderHighScore(thisState.getGameMode(), false);
     
     if (arduboy.justPressed(B_BUTTON)) {
 
         gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
-        gameState = GameState::Title_Init;
+        thisState.setGameState(GameState::Title_Init);
         EEPROM_Utils::saveRotation(gameRotation);
 
     }
@@ -67,43 +71,43 @@ void title() {
 
                     case 129:
 
-                        switch (gameMode) {
+                        switch (thisState.getGameMode()) {
 
                             case GameMode::Single:
-                                gameState = GameState::Game_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::Game);
+                                thisState.setGameState(GameState::Game_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
-                                gameState = GameState::Multi_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::Game);
+                                thisState.setGameState(GameState::Multi_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
-                                gameState = GameState::Multi_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::TugOfWar);
+                                thisState.setGameState(GameState::Multi_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
 
-                        thisPlayer.setGameMode(gameMode);
+                        // thisState.setGameMode(gameMode);
 
                         break;
                         
                 }
 
-                if (arduboy.justPressed(RIGHT_BUTTON) && gameMode != GameMode::Single) { 
+                if (arduboy.justPressed(RIGHT_BUTTON) && thisState.getGameMode() != GameMode::Single) { 
 
-                    gameMode--;
+                    thisState.decGameMode();
                 
                 }
 
-                if (arduboy.justPressed(LEFT_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
+                if (arduboy.justPressed(LEFT_BUTTON) && static_cast<uint8_t>(thisState.getGameMode()) < titleScreenVars.levels) { 
 
-                    gameMode++;
+                    thisState.incGameMode();
 
                 }
 
@@ -149,31 +153,31 @@ void title() {
 
                     case -39:
 
-                        switch (gameMode) {
+                        switch (thisState.getGameMode()) {
 
                             case GameMode::Single:
-                                gameState = GameState::Game_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::Game);
+                                thisState.setGameState(GameState::Game_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
-                                gameState = GameState::Multi_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::Game);
+                                thisState.setGameState(GameState::Multi_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
 
                                 if (gameRotation == GameRotation::Landscape) {
                                     gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
-                                    gameState = GameState::Title_Init;
+                                    thisState.setGameState(GameState::Title_Init);
                                     EEPROM_Utils::saveRotation(gameRotation);
                                 }
                                 
-                                gameState = GameState::Multi_Init;
-                                thisPlayer.setGameMode(gameMode);
-                                thisPlayer.setGameState(GameState::TugOfWar);
+                                thisState.setGameState(GameState::Multi_Init);
+                                // thisState.setGameMode(gameMode);
+                                // thisState.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
@@ -182,15 +186,15 @@ void title() {
                         
                 }
 
-                if (arduboy.justPressed(UP_BUTTON) && gameMode != GameMode::Single) { 
+                if (arduboy.justPressed(UP_BUTTON) && thisState.getGameMode() != GameMode::Single) { 
 
-                    gameMode--;
+                    thisState.decGameMode();
 
                 }
 
-                if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(gameMode) < titleScreenVars.levels) { 
+                if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(thisState.getGameState()) < titleScreenVars.levels) { 
 
-                    gameMode++;
+                    thisState.incGameMode();
 
                 }
 
@@ -210,6 +214,9 @@ void title() {
 
 void renderPlayerSelection(bool renderPlayerSelection) {
 
+    GameRotation gameRotation = thisState.getGameRotation();
+    GameMode gameMode = thisState.getGameMode();
+    
     switch (gameRotation) {
 
         case GameRotation::Portrait:

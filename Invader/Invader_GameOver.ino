@@ -2,9 +2,11 @@
 
 void gameOver_Init() {
 
+    GameRotation gameRotation = thisState.getGameRotation();
+
     killGame();
 
-    gameState = GameState::GameOver;
+    thisState.setGameState(GameState::GameOver);
     gameOverScreenVars.reset();
 
     switch (gameRotation) {
@@ -23,8 +25,8 @@ void gameOver_Init() {
 
     }
 
-    uint16_t oldScore = EEPROM_Utils::getScore(gameMode);
-    uint16_t score = (gameMode == GameMode::Single ? thisPlayer.getScore() : thisPlayer.getScore() > otherPlayer.getScore() ? thisPlayer.getScore() : otherPlayer.getScore());
+    uint16_t oldScore = EEPROM_Utils::getScore(thisState.getGameMode());
+    uint16_t score = (thisState.getGameMode() == GameMode::Single ? thisPlayer.getScore() : thisPlayer.getScore() > otherPlayer.getScore() ? thisPlayer.getScore() : otherPlayer.getScore());
 
     if (score > 80) {
 
@@ -46,7 +48,7 @@ void gameOver_Init() {
     }
 
 
-    if (gameMode == GameMode::Double) {
+    if (thisState.getGameMode() == GameMode::Double) {
 
         gameOverScreenVars.flashthisPlayer = thisPlayer.getScore() > otherPlayer.getScore();
         gameOverScreenVars.flashotherPlayer = otherPlayer.getScore() > thisPlayer.getScore();
@@ -55,12 +57,12 @@ void gameOver_Init() {
     
     if (oldScore < score) {
 
-        if (gameMode == GameMode::Single) {
+        if (thisState.getGameMode() == GameMode::Single) {
             gameOverScreenVars.flashthisPlayer = true;
         }
 
         gameOverScreenVars.newHighScore = true;
-        EEPROM_Utils::saveScore(gameMode, score);
+        EEPROM_Utils::saveScore(thisState.getGameMode(), score);
 
     }
 
@@ -73,7 +75,9 @@ void gameOver_Init() {
 
 void gameOver() {
 
+    GameRotation gameRotation = thisState.getGameRotation();
 
+    
     // Move mothership ..
 
     switch (gameRotation) {
@@ -109,7 +113,7 @@ void gameOver() {
 
     if (arduboy.justPressed(A_BUTTON)) { 
 
-        gameState = GameState::Title_Init;
+        thisState.setGameState(GameState::Title_Init);
 
     }
 
@@ -117,7 +121,7 @@ void gameOver() {
     // Render screen ---------------------------------------------------------------------
 
     renderScores(gameOverScreenVars.flashthisPlayer, gameOverScreenVars.flashotherPlayer);
-    renderScenery(gameMode, true);
+    renderScenery(thisState.getGameMode() , true);
 
     switch (gameRotation) {
 
@@ -132,7 +136,7 @@ void gameOver() {
                     Sprites::drawSelfMasked(52, 17, Images::Portrait::GameOver, 0);
                     
                     if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                        renderHighScore(gameMode, false);
+                        renderHighScore(thisState.getGameMode(), false);
                     }
 
                 }
@@ -152,7 +156,7 @@ void gameOver() {
                     Sprites::drawSelfMasked(32, 32, Images::Landscape::GameOver, 0);
                     
                     if (!gameOverScreenVars.newHighScore || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
-                        renderHighScore(gameMode, true);
+                        renderHighScore(thisState.getGameMode(), true);
                     }
 
                 }

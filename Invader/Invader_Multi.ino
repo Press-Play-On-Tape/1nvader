@@ -5,7 +5,7 @@ void killGame() {
 
     DEBUG_PRINTLN("killGame()");
 
-    gameState = GameState::Title_Init; 
+    thisState.setGameState(GameState::Title_Init);
     I2C::end();
     role = I2C::Role::Controller;
 
@@ -19,28 +19,28 @@ void drawMessage(const __FlashStringHelper *message) {
 
 void onReceive() {
 
-    otherPlayer = *reinterpret_cast<const Player *>(I2C::getBuffer());
+    otherState = *reinterpret_cast<const State *>(I2C::getBuffer());
 
-    if (otherPlayer.getGameMode() != thisPlayer.getGameMode()) {
+    // if (otherState.getGameMode() != thisState.getGameMode()) {
 
-        thisPlayer.setGameMode(otherPlayer.getGameMode());
-        thisPlayer.setGameState(otherPlayer.getGameState());
-        gameMode = otherPlayer.getGameMode();
-        gameState = otherPlayer.getGameState();
+    //     thisPlayer.setGameMode(otherPlayer.getGameMode());
+    //     thisPlayer.setGameState(otherPlayer.getGameState());
+    //     gameMode = otherPlayer.getGameMode();
+    //     gameState = otherPlayer.getGameState();
 
-        switch (thisPlayer.getGameState()) {
+    //     switch (thisPlayer.getGameState()) {
         
-            case GameState::Game:
-                game_Init();
-                break;
+    //         case GameState::Game:
+    //             game_Init();
+    //             break;
 
-            case GameState::TugOfWar:
-                tugOfWar_Init();
-                break;
+    //         case GameState::TugOfWar:
+    //             tugOfWar_Init();
+    //             break;
 
-        }
+    //     }
 
-    }
+    // }
 
     onReceive_Status = true;
 }
@@ -61,6 +61,8 @@ void exitMenu() {
 
 void waitForOther() {
     
+    GameRotation gameRotation = thisState.getGameRotation();
+
     arduboy.clear();
     renderScenery(GameMode::Single, false);
 
@@ -86,6 +88,8 @@ void waitForOther() {
 
 void flipCable() {
     
+    GameRotation gameRotation = thisState.getGameRotation();
+
     arduboy.clear();
     renderScenery(GameMode::Single, false);
 
@@ -111,11 +115,13 @@ void flipCable() {
 
 void multi_Init() {
 
-    gameState = GameState::Multi;
+    thisState.setGameState(GameState::Multi);
 
 }   
 
 void multi() {
+
+    GameRotation gameRotation = thisState.getGameRotation();
 
     switch (gameRotation) {
 
@@ -172,15 +178,15 @@ void multi() {
     }
 
     
-    switch (gameMode) {
+    switch (thisState.getGameMode()) {
     
         case GameMode::Single:
         case GameMode::Double:
-            gameState = GameState::Game_Init;
+            thisState.setGameState(GameState::Game_Init);
             break;
     
         case GameMode::TugOfWar:
-            gameState = GameState::TugOfWar_Init;
+            thisState.setGameState(GameState::TugOfWar_Init);
             break;
             
     }

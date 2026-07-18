@@ -3,13 +3,15 @@
 
 void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
+    GameRotation gameRotation = thisState.getGameRotation();
+
     switch (gameRotation) {
 
         case GameRotation::Portrait:
 
             #ifndef DEBUG_LANDSCAPE
                 
-                switch (gameMode) {
+                switch (thisState.getGameMode()) {
                     
                     case GameMode::Single:
 
@@ -59,7 +61,7 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
             #ifndef DEBUG_PORTRAIT                
                 
-                if (gameMode == GameMode::Double) {
+                if (thisState.getGameMode() == GameMode::Double) {
 
                     if (!flashthisPlayer || arduboy.getFrameCountHalf(Constants::FlashSpeed)) {
                         renderScore(36, 0, thisPlayer.getScore());
@@ -94,7 +96,9 @@ void renderScores(bool flashthisPlayer, bool flashotherPlayer) {
 
 void renderScore(uint8_t location, uint8_t height, uint16_t score) {
 
+    GameRotation gameRotation = thisState.getGameRotation();
     uint8_t digits[4] = {};
+
     extractDigits(digits, score);
 
     switch (gameRotation) {
@@ -187,6 +191,8 @@ void renderSceneryPortrait(bool renderStars) {
 
 void renderScenery(GameMode gameMode, bool renderStars) {
 
+    GameRotation gameRotation = thisState.getGameRotation();
+
     switch (gameRotation) {
 
         case GameRotation::Portrait:
@@ -272,8 +278,9 @@ void renderScenery(GameMode gameMode, bool renderStars) {
 void renderHighScore(GameMode gameMode, bool centre) {
 
     uint8_t digits[4] = {};
-
     uint16_t score = EEPROM_Utils::getScore(gameMode);
+    GameRotation gameRotation = thisState.getGameRotation();
+
     extractDigits(digits, score);
 
     switch (gameRotation) {
@@ -319,6 +326,8 @@ void renderHighScore(GameMode gameMode, bool centre) {
 }
 
 void renderInvaderSign() {
+
+    GameRotation gameRotation = thisState.getGameRotation();
 
     switch (gameRotation) {
 
