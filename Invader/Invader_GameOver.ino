@@ -4,8 +4,6 @@ void gameOver_Init() {
 
     GameRotation gameRotation = controlState.getGameRotation();
 
-    killGame();
-
     controlState.setGameState(GameState::GameOver);
     gameOverScreenVars.reset();
 
@@ -77,6 +75,33 @@ void gameOver() {
 
     GameRotation gameRotation = controlState.getGameRotation();
 
+    // If multi player and we're the controller (master), ...
+
+    if (controlState.getGameMode() != GameMode::Single) {
+        
+        if (role == I2C::Role::Controller) {
+
+            I2C::read(I2C::targetAddress, targetState);
+            readAddrNackError = 10;
+            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Async);
+
+        }  
+        else {
+
+            onReceive_Status = false;
+
+            controlState.setGameState(targetState.getGameState());
+            controlState.setGameMode(targetState.getGameMode());
+            controlState.setGameRotation(targetState.getGameRotation());
+            controlState.mothership.clone(targetState.mothership);
+            controlState.bomb.clone(targetState.bomb);
+            controlState.gamePlayVars.clone(targetState.gamePlayVars);
+            controlState.targetPlayer.clone(targetState.targetPlayer);
+            controlState.controlPlayer.clone(targetState.controlPlayer);
+            
+        } 
+
+    }
 
     // Move mothership ..
 
@@ -112,7 +137,7 @@ void gameOver() {
     // Handle User Input -----------------------------------------------------
 
     if (arduboy.justPressed(A_BUTTON)) { 
-
+        
         controlState.setGameState(GameState::Title_Init);
 
     }

@@ -20,33 +20,12 @@ void drawMessage(const __FlashStringHelper *message) {
 void onReceive() {
 
     targetState = *reinterpret_cast<const State *>(I2C::getBuffer());
-Serial.print("Game State ");
-Serial.println((uint8_t)targetState.getGameState());
-
-// if (targetState.mothership.getPos() != controlState.mothership.getPos()) {
-    Serial.print("receive data ");
-    Serial.print(targetState.mothership.getPos());
-    Serial.print(",");
-    Serial.print(targetState.mothership.getHeight());
-    Serial.print(" ");
-    controlState.setGameState(targetState.getGameState());
-    controlState.setGameMode(targetState.getGameMode());
-    controlState.setGameRotation(targetState.getGameRotation());
-    controlState.mothership.clone(targetState.mothership);
-    Serial.print(targetState.mothership.getPos());
-    Serial.print(",");
-    Serial.print(targetState.mothership.getHeight());
-    Serial.print(" ");
-    Serial.print(controlState.mothership.getPos());
-    Serial.print(",");
-    Serial.println(controlState.mothership.getHeight());
-// }
-
     onReceive_Status = true;
+
 }
 
 void onRequest() {
-Serial.println("request data ");
+
     I2C::reply(controlState);
     onRequest_Status = true;
 }

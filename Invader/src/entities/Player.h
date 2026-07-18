@@ -14,6 +14,7 @@ struct Player {
         uint16_t score = 0;
         bool bulletActive = false;
         bool beingPushed = false;
+        uint8_t justPressed = 0;
 
         Movement movement = Movement::Up;
 
@@ -27,6 +28,7 @@ struct Player {
         uint8_t getExplosionCounter()                       { return this->explodeCounter; }
         bool getBulletActive()                              { return this->bulletActive; }
         bool getBeingPushed()                               { return this->beingPushed; }
+        uint8_t getJustPressed()                            { return this->justPressed; }
 
         Movement getMovement()                              { return this->movement; }
 
@@ -35,8 +37,10 @@ struct Player {
         void setBulletX(int16_t val)                        { this->bulletX = val; }
         void setBulletY(int16_t val)                        { this->bulletY = val; }
         void setScore(uint16_t val)                         { this->score = val; }
+        void setExplosionCounter(uint8_t val)               { this->explodeCounter = val; }
         void setBulletActive(bool val)                      { this->bulletActive = val; }
         void setBeingPushed(bool val)                       { this->beingPushed = val; }
+        void setJustPressed(uint8_t val)                    { this->justPressed = val; }
 
         void setMovement(Movement val)                      { this->movement = val; }
 
@@ -45,10 +49,15 @@ struct Player {
 
         void clone(Player &player) {
 
-            player.setBulletActive(this->getBulletActive());
-            player.setBulletX(this->getBulletX());
-            player.setBulletY(this->getBulletY());
-            player.setMovement(this->getMovement());
+            this->setPos(player.getPos());
+            this->setPlayerIdx(player.getPlayerIdx());
+            this->setBulletX(player.getBulletX());
+            this->setBulletY(player.getBulletY());
+            this->setScore(player.getScore());
+            this->setExplosionCounter(player.getExplosionCounter());
+            this->setBulletActive(player.getBulletActive());
+            this->setBeingPushed(player.getBeingPushed());
+            this->setMovement(player.getMovement());
 
         }
 

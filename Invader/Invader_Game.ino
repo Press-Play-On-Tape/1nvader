@@ -126,31 +126,41 @@ void game() {
         if (role == I2C::Role::Controller) {
 
             I2C::read(I2C::targetAddress, targetState);
-    Serial.print("master data ");
-    Serial.println(controlState.mothership.getPos());
-            if (I2C::getError() == I2C::Error::ReadAddrNack) {
 
-                if (readAddrNackError > 0) {
-                    readAddrNackError--;
-                }
-                else {
-                    DEBUG_PRINTLN("game() -> killGame(B)");
-                    killGame();
-                    return;
-                }
-            }
+            // if (I2C::getError() == I2C::Error::ReadAddrNack) {
 
-            I2C::write(I2C::targetAddress, controlPlayer, I2C::Mode::Async);
+            //     if (readAddrNackError > 0) {
+            //         readAddrNackError--;
+            //     }
+            //     else {
+            //         DEBUG_PRINTLN("game() -> killGame(B)");
+            //         killGame();
+            //         return;
+            //     }
+            // }
+
+            // readAddrNackError = 10;
+            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Async);
 
         }  
         else {
 
-            if (!onReceive_Status) {
-                DEBUG_PRINTLN("game() -> killGame(C)");
-                killGame();
-            }
+            // if (!onReceive_Status) {
+            //     DEBUG_PRINTLN("game() -> killGame(C)");
+            //     killGame();
+            // }
 
             onReceive_Status = false;
+
+            controlState.setGameState(targetState.getGameState());
+            controlState.setGameMode(targetState.getGameMode());
+            controlState.setGameRotation(targetState.getGameRotation());
+            controlState.mothership.clone(targetState.mothership);
+            controlState.bomb.clone(targetState.bomb);
+            controlState.gamePlayVars.clone(targetState.gamePlayVars);
+            controlState.targetPlayer.clone(targetState.targetPlayer);
+            controlState.controlPlayer.clone(targetState.controlPlayer);
+
         } 
 
     }
@@ -191,15 +201,17 @@ void game() {
 
         // Handle movements ..
 
+        GameMode gameMode = controlState.getGameMode();
+        targetPlayer.setJustPressed(0);
+
         if (!controlPlayer.getBeingPushed()) {
 
             if (controlState.getGameMode() == GameMode::Double) {
 
                 if (arduboy.justPressed(A_BUTTON)) {
 
-                    if (role == I2C::Role::Controller) {
+                    if (role == I2C::Role::Controller) {    
 
-                        GameMode gameMode = controlState.getGameMode();
                         bool fired = controlPlayer.fire(gameRotation, gameMode, &targetPlayer);
 
                         #ifdef SOUNDS
@@ -210,7 +222,8 @@ void game() {
                     else {
 
                         GameMode gameMode = controlState.getGameMode();
-                        bool fired = controlPlayer.fire(gameRotation, gameMode, &targetPlayer);
+                        bool fired = targetPlayer.fire(gameRotation, gameMode, &controlPlayer);
+                        targetPlayer.setJustPressed(arduboy.justPressedButtons());
 
                         #ifdef SOUNDS
                             if (fired) sound.tones(Sounds::Player_Fires_Bullet);
@@ -220,6 +233,16 @@ void game() {
 
                 }
 
+                if (role == I2C::Role::Controller) {    
+
+                    if (targetState.targetPlayer.getJustPressed() & A_BUTTON) {
+
+                        bool fired = targetPlayer.fire(gameRotation, gameMode, &controlPlayer);
+
+                    }
+
+                }
+                
             }
             else {
                 
@@ -245,20 +268,6 @@ void game() {
                 movePlayer(controlPlayer, targetPlayer);
                 movePlayer(targetPlayer, controlPlayer);
                 mothership.move(gameRotation, controlState.getGameMode(), controlPlayer, targetPlayer);
-
-                if (controlPlayer.getBulletActive() && !gamePlayVars.waveCleared)     moveBullet(controlPlayer); 
-                if (targetPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(targetPlayer);
-                if (bomb.getActive()) moveBomb();
-
-                controlPlayer.decExplodeCounter();
-                targetPlayer.decExplodeCounter();
-
-            }
-            else {
-
-                movePlayer(controlPlayer, targetPlayer);
-                movePlayer(targetPlayer, controlPlayer);
-                // mothership.move(gameRotation, controlState.getGameMode(), controlPlayer, targetPlayer);
 
                 if (controlPlayer.getBulletActive() && !gamePlayVars.waveCleared)     moveBullet(controlPlayer); 
                 if (targetPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(targetPlayer);
@@ -388,10 +397,7 @@ void game() {
                     }
 
                 }
-// Serial.print("mother ");
-// Serial.print(mothership.getHeight());
-// Serial.print(" ");
-// Serial.println(mothership.getPosDisplay());
+
                 switch (mothership.getExplosionCounter()) {
 
                     case 0:
@@ -840,7 +846,6 @@ void moveBullet(Player &player) {
                     Rect mothershipRect = { mothership.getHeight() + 1, mothership.getPosDisplay() + 1, Constants::MothershipHeight - 2, Constants::MothershipWidth - 2 };
 
                     if (arduboy.collide(bulletRect, mothershipRect)) {
-Serial.println("Explode --------");
 
                         #ifdef SOUNDS
                             sound.tones(Sounds::Enemy_Explosion);

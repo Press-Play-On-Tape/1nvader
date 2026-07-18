@@ -1,5 +1,6 @@
 #include "src/utils/Arduboy2Ext.h"
-#define I2C_BUFFER_CAPACITY 44
+#define I2C_BUFFER_CAPACITY 46
+// #define I2C_FREQUENCY 50000
 #define I2C_IMPLEMENTATION
 #include <ArduboyI2C.h>
 
@@ -34,6 +35,7 @@ Player &targetPlayer        = controlState.targetPlayer;
 Mothership &mothership      = controlState.mothership;
 GamePlayVars &gamePlayVars  = controlState.gamePlayVars;
 Bomb &bomb                  = controlState.bomb;
+
 
 I2C::Role role;
 volatile bool onReceive_Status = false;

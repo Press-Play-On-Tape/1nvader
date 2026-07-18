@@ -8,6 +8,12 @@ struct GamePlayVars {
     uint8_t waveCounter;
     bool waveCleared;
 
+    void clone(GamePlayVars gpv) {
+        this->bombCounter = gpv.bombCounter;
+        this->waveCounter = gpv.waveCounter;
+        this->waveCleared = gpv.waveCleared;
+    }
+    
 };
 
 struct TitleScreenVars {

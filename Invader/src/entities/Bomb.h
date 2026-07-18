@@ -24,8 +24,19 @@ struct Bomb {
         void setHeight(int8_t val)                          { this->height = val; }
         void setExploding(uint8_t val)                      { this->exploding = val; }
         void setActive(bool val)                            { this->active = val; this->exploding = false; }
+        void setExplosionCounter(uint8_t val)               { this->explodingCount = val; }
 
     public:
+
+        void clone(Bomb &bomb) {
+
+            this->setPos(bomb.getPos());
+            this->setHeight(bomb.getHeight());
+            this->setExploding(bomb.getExploding());
+            this->setActive(bomb.getActive());
+            this->setExplosionCounter(bomb.getExplosionCounter());
+
+        }
 
         void decHeight(GameRotation gameRotation) {
 

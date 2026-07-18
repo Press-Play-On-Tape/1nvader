@@ -66,6 +66,7 @@ void tugOfWar() {
 
         }
         
+        readAddrNackError = 10;
         I2C::write(I2C::targetAddress, controlPlayer, I2C::Mode::Async);
 
     }  

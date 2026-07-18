@@ -4,6 +4,7 @@
 void title_Init() {
 
     GameRotation gameRotation = controlState.getGameRotation();
+    killGame();
 
     controlState.setGameState(GameState::Title);
     titleScreenVars.reset(gameRotation);

@@ -228,13 +228,13 @@ struct Mothership {
 
         void clone(Mothership &mothership) {
         
-            mothership.setPos(this->getPos());
-            mothership.setHeight(this->getHeight());
-            mothership.setCounter(this->getCounter());
-            mothership.setExplosionCounter(this->getExplosionCounter());
-            mothership.setRowAdjustment(this->getRowAdjustment());
-            mothership.setMovement(this->getMovement());     
-               
+            this->setPos(mothership.getPos());
+            this->setHeight(mothership.getHeight());
+            this->setCounter(mothership.getCounter());
+            this->setExplosionCounter(mothership.getExplosionCounter());
+            this->setRowAdjustment(mothership.getRowAdjustment());
+            this->setMovement(mothership.getMovement());     
+
         }
 
         void move(GameRotation gameRotation, GameMode gameMode, Player &controlPlayer) {
@@ -487,9 +487,6 @@ struct Mothership {
                     break;
 
             }
-
-            Serial.print("Mothership init ");
-            Serial.println(this->pos);
 
         }
 
