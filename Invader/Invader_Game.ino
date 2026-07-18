@@ -119,13 +119,13 @@ void game() {
     }
 
 
-    // if we're the controller (master), ...
+    // If multi player and we're the controller (master), ...
 
     if (thisState.getGameMode() != GameMode::Single) {
         
         if (role == I2C::Role::Controller) {
 
-            I2C::read(I2C::targetAddress, otherPlayer);
+            I2C::read(I2C::targetAddress, otherState);
 
             if (I2C::getError() == I2C::Error::ReadAddrNack) {
 
@@ -203,24 +203,36 @@ void game() {
 
         if (thisState.getGameMode() == GameMode::Double) {
 
-            movePlayer(thisPlayer, otherPlayer);
-            movePlayer(otherPlayer, thisPlayer);
-            mothership.move(gameRotation, thisState.getGameMode(), thisPlayer, otherPlayer);
+            if (role == I2C::Role::Controller) {
 
+                movePlayer(thisPlayer, otherPlayer);
+                movePlayer(otherPlayer, thisPlayer);
+                mothership.move(gameRotation, thisState.getGameMode(), thisPlayer, otherPlayer);
+
+                if (thisPlayer.getBulletActive() && !gamePlayVars.waveCleared)       moveBullet(thisPlayer); 
+                if (otherPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(otherPlayer);
+                if (bomb.getActive()) moveBomb();
+
+                thisPlayer.decExplodeCounter();
+                otherPlayer.decExplodeCounter();
+
+            }
+            
         }
         else {
 
             movethisPlayer();
             mothership.move(gameRotation, thisState.getGameMode(), thisPlayer);
 
+            if (thisPlayer.getBulletActive() && !gamePlayVars.waveCleared)       moveBullet(thisPlayer); 
+            if (otherPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(otherPlayer);
+            if (bomb.getActive()) moveBomb();
+
+            thisPlayer.decExplodeCounter();
+            otherPlayer.decExplodeCounter();
+
         }
 
-        if (thisPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(thisPlayer); 
-        if (otherPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(otherPlayer);
-        if (bomb.getActive()) moveBomb();
-
-        thisPlayer.decExplodeCounter();
-        otherPlayer.decExplodeCounter();
 
 
         // End of game?

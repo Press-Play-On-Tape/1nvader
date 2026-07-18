@@ -16,9 +16,6 @@ struct Player {
         bool beingPushed = false;
 
         Movement movement = Movement::Up;
-        // GameState gameState = GameState::Game;
-        // GameMode gameMode = GameMode::Single;
-
 
     public:
 
@@ -45,6 +42,15 @@ struct Player {
 
 
     public:
+
+        void clone(Player &player) {
+
+            player.setBulletActive(this->getBulletActive());
+            player.setBulletX(this->getBulletX());
+            player.setBulletY(this->getBulletY());
+            player.setMovement(this->getMovement());
+
+        }
 
         bool explode() {
 

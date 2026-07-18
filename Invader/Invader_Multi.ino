@@ -21,6 +21,7 @@ void onReceive() {
 
     otherState = *reinterpret_cast<const State *>(I2C::getBuffer());
 
+    Serial.println("I am the Target");
     // if (otherState.getGameMode() != thisState.getGameMode()) {
 
     //     thisPlayer.setGameMode(otherPlayer.getGameMode());
