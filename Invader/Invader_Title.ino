@@ -13,11 +13,7 @@ void title_Init() {
         sound.tones(Sounds::Theme);
     #endif
 
-    titleScreenVars.levels = 0;
-
-    for (uint8_t i = 0; i < 3; i++) {
-        if (EEPROM_Utils::getLevel(i) == 1) titleScreenVars.levels++;
-    }
+    titleScreenVars.levels = 2;
 
 }   
 
@@ -33,6 +29,7 @@ void title() {
     if (arduboy.justPressed(B_BUTTON)) {
 
         gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
+        controlState.setGameRotation(gameRotation);
         controlState.setGameState(GameState::Title_Init);
         EEPROM_Utils::saveRotation(gameRotation);
 
@@ -76,25 +73,17 @@ void title() {
 
                             case GameMode::Single:
                                 controlState.setGameState(GameState::Game_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
                                 controlState.setGameState(GameState::Multi_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
                                 controlState.setGameState(GameState::Multi_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
-
-                        // controlState.setGameMode(gameMode);
 
                         break;
                         
@@ -158,27 +147,20 @@ void title() {
 
                             case GameMode::Single:
                                 controlState.setGameState(GameState::Game_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::Double:
                                 controlState.setGameState(GameState::Multi_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::Game);
                                 break;
 
                             case GameMode::TugOfWar:
 
                                 if (gameRotation == GameRotation::Landscape) {
-                                    gameRotation = gameRotation == GameRotation::Landscape ? GameRotation::Portrait : GameRotation::Landscape;
-                                    controlState.setGameState(GameState::Title_Init);
+                                    controlState.setGameRotation(GameRotation::Portrait);
                                     EEPROM_Utils::saveRotation(gameRotation);
                                 }
                                 
                                 controlState.setGameState(GameState::Multi_Init);
-                                // controlState.setGameMode(gameMode);
-                                // controlState.setGameState(GameState::TugOfWar);
                                 break;
 
                         }
@@ -193,7 +175,8 @@ void title() {
 
                 }
 
-                if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(controlState.getGameState()) < titleScreenVars.levels) { 
+
+                if (arduboy.justPressed(DOWN_BUTTON) && static_cast<uint8_t>(controlState.getGameMode()) < titleScreenVars.levels) { 
 
                     controlState.incGameMode();
 
@@ -233,9 +216,6 @@ void renderPlayerSelection(bool renderPlayerSelection) {
                 Sprites::drawOverwrite(54, 13, Images::Portrait::VSMode, 0);
                 Sprites::drawOverwrite(46, 13, Images::Portrait::TugOfWarMode, 0);
 
-                if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(54, 5, Images::Portrait::Lock, 0);
-                if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(46, 5, Images::Portrait::Lock, 0);
-
             #endif
 
             break;
@@ -252,9 +232,6 @@ void renderPlayerSelection(bool renderPlayerSelection) {
                 Sprites::drawOverwrite(79, 12, Images::Landscape::SurvivalMode, 0);
                 Sprites::drawOverwrite(79, 21, Images::Landscape::VSMode, 0);
                 Sprites::drawOverwrite(79, 30, Images::Landscape::TugOfWarMode, 0);
-
-                if (EEPROM_Utils::getLevel(0) == 0) Sprites::drawOverwrite(71, 21, Images::Landscape::Lock, 0);
-                if (EEPROM_Utils::getLevel(1) == 0) Sprites::drawOverwrite(71, 30, Images::Landscape::Lock, 0);
 
             #endif
 

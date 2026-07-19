@@ -38,7 +38,7 @@ void launchParticles(GameRotation gameRotation, int16_t x, int16_t y) {
 
 }
 
-void updateAndRenderParticles(GameRotation gameRotation) {
+void updateAndRenderParticles(GameRotation gameRotation, GameMode gameMode) {
 
     for ( int i = 0; i < Constants::ParticlesMax; i++) {
 
@@ -54,12 +54,39 @@ void updateAndRenderParticles(GameRotation gameRotation) {
 
                     #ifndef DEBUG_LANDSCAPE
 
-                        if (pSize == 1) {
+                        if (gameMode == GameMode::TugOfWar) {
 
-                            arduboy.drawPixel(particles[i].getY(), particles[i].getX(), 1);
-                        } 
+                            if (role == I2C::Role::Controller) {
+                                
+                                if (pSize == 1) {
+                                    arduboy.drawPixel(particles[i].getY(), particles[i].getX(), 1);
+                                } 
+                                else {
+                                    arduboy.drawRect(particles[i].getY(), particles[i].getX(), pSize, pSize, 1);
+                                }
+
+                            }
+                            else {
+                                
+                                if (pSize == 1) {
+                                    arduboy.drawPixel(particles[i].getX(), particles[i].getY(), 1);
+                                } 
+                                else {
+                                    arduboy.drawRect(particles[i].getX(), particles[i].getY(), pSize, pSize, 1);
+                                }
+
+                            }
+                        
+                        }
                         else {
-                            arduboy.drawRect(particles[i].getY(), particles[i].getX(), pSize, pSize, 1);
+
+                            if (pSize == 1) {
+                                arduboy.drawPixel(particles[i].getY(), particles[i].getX(), 1);
+                            } 
+                            else {
+                                arduboy.drawRect(particles[i].getY(), particles[i].getX(), pSize, pSize, 1);
+                            }
+
                         }
 
                     #endif

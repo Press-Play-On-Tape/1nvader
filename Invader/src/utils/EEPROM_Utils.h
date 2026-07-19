@@ -15,8 +15,6 @@ class EEPROM_Utils {
         static void saveMode(GameMode mode);
         static GameRotation getRotation();
         static void saveRotation(GameRotation rotation);
-        static uint8_t getLevel(uint8_t level);
-        static void saveLevel(uint8_t level, uint8_t value);
         static int16_t checkSum(bool update);
 
 };
@@ -50,8 +48,6 @@ void EEPROM_Utils::initEEPROM(bool force) {
         EEPROM.put(Constants::EEPROM_Tug_Of_War, hs);
         EEPROM.put(Constants::EEPROM_Mode, mode);
         EEPROM.put(Constants::EEPROM_Rotation, rotation);
-        EEPROM.put(Constants::EEPROM_Lock_LVL_0, 1);
-        EEPROM.put(Constants::EEPROM_Lock_LVL_1, 1);
 
         EEPROM_Utils::checkSum(true);
 
@@ -144,28 +140,6 @@ GameRotation EEPROM_Utils::getRotation() {
 void EEPROM_Utils::saveRotation(GameRotation rotation) {
 
     EEPROM.update(Constants::EEPROM_Rotation, static_cast<uint8_t>(rotation));
-    EEPROM_Utils::checkSum(true);
-
-}
-
-/* -----------------------------------------------------------------------------
- *   Get level. 
- */
-uint8_t EEPROM_Utils::getLevel(uint8_t level) {
-
-    uint8_t rotation = 0;
-    EEPROM.get(Constants::EEPROM_Lock_LVL_0 + level, rotation);
-    return rotation;
-
-}
-
-
-/* -----------------------------------------------------------------------------
- *   Save level ..
- */
-void EEPROM_Utils::saveLevel(uint8_t level, uint8_t value) {
-
-    EEPROM.update(Constants::EEPROM_Lock_LVL_0 + level, value);
     EEPROM_Utils::checkSum(true);
 
 }

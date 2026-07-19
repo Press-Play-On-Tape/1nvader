@@ -2,8 +2,7 @@
 #define I2C_BUFFER_CAPACITY 46
 // #define I2C_FREQUENCY 50000
 #define I2C_IMPLEMENTATION
-#include <ArduboyI2C.h>
-
+#include "src/utils/ArduboyI2C.h"
 #include "src/entities/Entities.h"
 #include "src/images/Images.h"
 #include "src/utils/Constants.h"
@@ -17,7 +16,7 @@
 #endif
 
 Arduboy2Ext arduboy;
-// ARDUBOY_NO_USB
+ARDUBOY_NO_USB
 
 #ifdef SOUNDS
 ArduboyTones sound(arduboy.audio.enabled);
@@ -59,7 +58,7 @@ void setup() {
 
     controlState.setGameState(GameState::Splash_Init);
     controlState.setGameMode(GameMode::Single);
-    controlState.setGameRotation(GameRotation::Portrait);
+    controlState.setGameRotation(EEPROM_Utils::getRotation());
 
 }   
 
@@ -112,13 +111,8 @@ void loop() {
         case GameState::Game:
 
             game();
-            arduboy.setCursor(56,0);
-            if (role == I2C::Role::Controller) {
-                arduboy.print("C");
-            }
-            else {
-                arduboy.print("T");
-            }            
+            // arduboy.setCursor(56,0);
+            // arduboy.print(role == I2C::Role::Controller ? "C" : "T");
             break;
 
         case GameState::TugOfWar_Init:
@@ -128,14 +122,10 @@ void loop() {
             break;
 
         case GameState::TugOfWar:
-            // arduboy.setCursor(56,0);
-            // if (role == I2C::Role::Controller) {
-            //     arduboy.print("L L");
-            // }
-            // else {
-            //     arduboy.print("R R");
-            // }
+
             tugOfWar();
+            // arduboy.setCursor(6,0);
+            // arduboy.print(role == I2C::Role::Controller ? "C C" : "T T");
             break;
             
         case GameState::GameOver_Init:

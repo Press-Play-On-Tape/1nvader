@@ -137,10 +137,11 @@ void game() {
             //         killGame();
             //         return;
             //     }
+            
             // }
 
-            // readAddrNackError = 10;
-            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Async);
+            readAddrNackError = 10;
+            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Sync);
 
         }  
         else {
@@ -172,7 +173,7 @@ void game() {
 
         if (role == I2C::Role::Controller) {
             
-            if (controlPlayer.getScore() + targetPlayer.getScore() > 20) {
+            if (controlPlayer.getScore() + targetPlayer.getScore() >= 20) {
 
                 if ((gameRotation == GameRotation::Landscape && mothership.getHeight() < 30) || (gameRotation == GameRotation::Portrait && mothership.getHeight() > 56)) {
 
@@ -277,6 +278,12 @@ void game() {
                 targetPlayer.decExplodeCounter();
 
             }
+            else {
+
+                if (controlPlayer.getBulletActive() && !gamePlayVars.waveCleared)     moveBullet(controlPlayer); 
+                if (targetPlayer.getBulletActive() && !gamePlayVars.waveCleared)      moveBullet(targetPlayer);
+
+            }
             
         }
         else {
@@ -369,8 +376,8 @@ void game() {
     // Render screen ---------------------------------------------------------------------
 
     renderScores(false, false);
-    renderScenery(controlState.getGameMode() , true);
-    updateAndRenderParticles(gameRotation);
+    renderScenery(controlState.getGameMode(), true);
+    updateAndRenderParticles(gameRotation, controlState.getGameMode());
 
     switch (gameRotation) {
 
@@ -388,7 +395,7 @@ void game() {
 
                 if (controlState.getGameMode() == GameMode::Double) {
 
-                    Sprites::drawExternalMask(0, targetPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
+                    Sprites::drawExternalMask(0, targetPlayer.getPos(), Images::Portrait::Normal::Player2, Images::Portrait::Normal::Player2_Mask, 0, 0);
 
                     if (targetPlayer.getExplosionCounter() > 0) {
 
@@ -474,7 +481,7 @@ void game() {
 
                 if (controlState.getGameMode() == GameMode::Double) {
 
-                    Sprites::drawExternalMask(targetPlayer.getPos(), 56, Images::Landscape::Player, Images::Landscape::Player_Mask, 0, 0);
+                    Sprites::drawExternalMask(targetPlayer.getPos(), 56, Images::Landscape::Player2, Images::Landscape::Player2_Mask, 0, 0);
 
                     if (targetPlayer.getExplosionCounter() > 0) {
 
@@ -589,7 +596,7 @@ void game() {
 
         uint8_t idx = gamePlayVars.waveCounter / 8;
 
-        updateAndRenderParticles(gameRotation);
+        updateAndRenderParticles(gameRotation, controlState.getGameMode());
 
         switch (gameRotation) {
 

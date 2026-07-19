@@ -26,26 +26,6 @@ void gameOver_Init() {
     uint16_t oldScore = EEPROM_Utils::getScore(controlState.getGameMode());
     uint16_t score = (controlState.getGameMode() == GameMode::Single ? controlPlayer.getScore() : controlPlayer.getScore() > targetPlayer.getScore() ? controlPlayer.getScore() : targetPlayer.getScore());
 
-    if (score > 80) {
-
-        if (EEPROM_Utils::getLevel(0) == 0) {
-
-            EEPROM_Utils::saveLevel(0, 1);
-
-        }
-        else if (score > 160) {
-
-            if (EEPROM_Utils::getLevel(1) == 0) {
-
-                EEPROM_Utils::saveLevel(1, 1);
-                
-            }
-
-        }
-
-    }
-
-
     if (controlState.getGameMode() == GameMode::Double) {
 
         gameOverScreenVars.flashcontrolPlayer = controlPlayer.getScore() > targetPlayer.getScore();

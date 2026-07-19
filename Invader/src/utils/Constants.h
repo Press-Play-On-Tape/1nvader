@@ -8,10 +8,11 @@
 #define _DEBUG_PRINTLN  Serial.println
 #define DEBUG_PRINT    void
 #define DEBUG_PRINTLN  void
-#define DEBUG_PORTRAIT
+#define _DEBUG_PORTRAIT
 #define _DEBUG_LANDSCAPE
 #define DEBUG_BREAK    asm volatile("break\n");
 #define SOUNDS
+#define I2C_EXTRAS
 
 // ---------------------------------------
 

@@ -47,96 +47,97 @@ void tugOfWar() {
         return;
     }
 
+
     // If we're the controller (master), ...
    
     if (role == I2C::Role::Controller) {
 
-        I2C::read(I2C::targetAddress, targetPlayer);
+        I2C::read(I2C::targetAddress, targetState);
 
-        if (I2C::getError() == I2C::Error::ReadAddrNack) {
+        // if (I2C::getError() == I2C::Error::ReadAddrNack) {
 
-            if (readAddrNackError > 0) {
-                readAddrNackError--;
-            }
-            else {
-                DEBUG_PRINTLN("tugOfWar() -> killGame(B)");
-                killGame();
-                return;
-            }
+        //     if (readAddrNackError > 0) {
+        //         readAddrNackError--;
+        //     }
+        //     else {
+        //         DEBUG_PRINTLN("tugOfWar() -> killGame(B)");
+        //         killGame();
+        //         return;
+        //     }
 
-        }
+        // }
         
-        readAddrNackError = 10;
-        I2C::write(I2C::targetAddress, controlPlayer, I2C::Mode::Async);
+        // readAddrNackError = 10;
+        I2C::write(I2C::targetAddress, controlState, I2C::Mode::Sync);
 
     }  
     else {
 
-        // uint8_t x = 0;
-        // I2C::setAddress(I2C::targetAddress);
-        // // wait for the controller (master) to send us its input
-        // while (!onReceive_Status) { 
-        // DEBUG_BREAK
-        //     x++;
-        //     if (x == 255) {
-        //     DEBUG_PRINTLN("tugOfWar() -> killGame(C)");
+        // if (!onReceive_Status) {
+        //     DEBUG_PRINTLN("game() -> killGame(C)");
         //     killGame();
-        //     return;            
-        //     }
         // }
-        // // store the controller's input and reset the flag
-        // // rightInput = controllerInput;
-        // onReceive_Status = false;
-
-        // // wait for the controller (master) to request our input
-        // while (!onRequest_Status) { }
-        // // reset the flag
-        // onRequest_Status = false;
-        // // set our address to the null address; we're done
-        // // otherwise the controller may get ahead of us and request our input again before we have a chance to update it
-        // // thus destroying our synchronization
-        // I2C::setAddress(I2C::nullAddress);
-
-        if (!onReceive_Status) {
-            DEBUG_PRINTLN("tugOfWar() -> killGame(C)");
-            killGame();
-            return;
-        }
 
         onReceive_Status = false;
+
+        controlState.setGameState(targetState.getGameState());
+        controlState.setGameMode(targetState.getGameMode());
+        controlState.setGameRotation(targetState.getGameRotation());
+        controlState.mothership.clone(targetState.mothership);
+        controlState.bomb.clone(targetState.bomb);
+        controlState.gamePlayVars.clone(targetState.gamePlayVars);
+        controlState.targetPlayer.clone(targetState.targetPlayer);
+        controlState.controlPlayer.clone(targetState.controlPlayer);
+
     } 
 
 
     // Handle movements ..
 
-    // if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON) || arduboy.justPressed(UP_BUTTON) || arduboy.justPressed(DOWN_BUTTON)) {
+    GameMode gameMode = controlState.getGameMode();
+    targetPlayer.setJustPressed(0);
+
     if (arduboy.justPressed(A_BUTTON) ) {
 
-        bool fired = controlPlayer.fire(gameRotation, controlState.getGameMode(), nullptr);
+        if (role == I2C::Role::Controller) {   
 
-        #ifdef SOUNDS
-            if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-        #endif
+            bool fired = controlPlayer.fire(gameRotation, gameMode, nullptr);
+
+            #ifdef SOUNDS
+                if (fired) sound.tones(Sounds::Player_Fires_Bullet);
+            #endif
+
+        }
+        else {
+
+            GameMode gameMode = controlState.getGameMode();
+            bool fired = targetPlayer.fire(gameRotation, gameMode, &controlPlayer);
+            targetPlayer.setJustPressed(arduboy.justPressedButtons());
+
+            #ifdef SOUNDS
+                if (fired) sound.tones(Sounds::Player_Fires_Bullet);
+            #endif
+        
+        }
 
     }
 
-    // if ((arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON))) {
+    if (role == I2C::Role::Controller) {    
 
-    //      bool fired = targetPlayer.fire(gameRotation, gameMode, nullptr);
+        if (targetState.targetPlayer.getJustPressed() & A_BUTTON) {
 
-    //     #ifdef SOUNDS
-    //         if (fired) sound.tones(Sounds::Player_Fires_Bullet);
-    //     #endif
+            bool fired = targetPlayer.fire(gameRotation, gameMode, &controlPlayer);
 
-    // }
+        }
     
-    movePlayer(controlPlayer, targetPlayer);
-    movePlayer(targetPlayer, controlPlayer);
-    mothership.moveTugOfWar(controlPlayer, targetPlayer);
+        movePlayer(controlPlayer, targetPlayer);
+        movePlayer(targetPlayer, controlPlayer);
+        mothership.moveTugOfWar(controlPlayer, targetPlayer);
 
-    if (controlPlayer.getBulletActive())      moveBullet(controlPlayer); 
-    if (targetPlayer.getBulletActive())     moveBullet(targetPlayer);
+        if (controlPlayer.getBulletActive())      moveBullet(controlPlayer); 
+        if (targetPlayer.getBulletActive())     moveBullet(targetPlayer);
 
+    }
 
 
     // End of game?
@@ -167,25 +168,14 @@ void tugOfWar() {
 
     renderScenery(controlState.getGameMode() , true);
     renderScoreTugOfWar(targetPlayer.getScore(), controlPlayer.getScore());
+    updateAndRenderParticles(GameRotation::Portrait, controlState.getGameMode());
 
-    // if (role == I2C::Role::Controller) {
-    //     arduboy.setCursor(0,0);
-    //     arduboy.print("This:");
-    //     arduboy.print(controlPlayer.getPos());
-    //     arduboy.print(" Other:");
-    //     arduboy.print(targetPlayer.getPos());
-    // }
-    // else {
-    //     arduboy.setCursor(0,0);
-    //     arduboy.print("This:");
-    //     arduboy.print(controlPlayer.getPos());
-    //     arduboy.print(" Other:");
-    //     arduboy.print(targetPlayer.getPos());
-    // }
-
-    updateAndRenderParticles(GameRotation::Landscape);
-
-    Sprites::drawExternalMask(0, controlPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
+    if (role == I2C::Role::Controller) {
+        Sprites::drawExternalMask(0, controlPlayer.getPos(), Images::Portrait::Normal::Player, Images::Portrait::Normal::Player_Mask, 0, 0);
+    }
+    else {
+        Sprites::drawExternalMask(0, 64 - 12 - targetPlayer.getPos(), Images::Portrait::Normal::Player2, Images::Portrait::Normal::Player2_Mask, 0, 0);
+    }
 
     if (controlPlayer.getExplosionCounter() > 0) {
 
@@ -193,7 +183,12 @@ void tugOfWar() {
 
     }
 
-    Sprites::drawExternalMask(120, targetPlayer.getPos(), Images::Portrait::Rotated::Player, Images::Portrait::Rotated::Player_Mask, 0, 0);
+    if (role == I2C::Role::Controller) {
+        Sprites::drawExternalMask(120, targetPlayer.getPos(), Images::Portrait::Rotated::Player2, Images::Portrait::Rotated::Player2_Mask, 0, 0);
+    }
+    else {
+        Sprites::drawExternalMask(120, 64 - 12 - controlPlayer.getPos(), Images::Portrait::Rotated::Player, Images::Portrait::Rotated::Player_Mask, 0, 0);
+    }
 
     if (targetPlayer.getExplosionCounter() > 0) {
 
@@ -202,6 +197,8 @@ void tugOfWar() {
     }
 
     if (role == I2C::Role::Controller) {
+
+        DEBUG_PRINTLN(F("Controller"));
 
         switch (mothership.getExplosionCounter()) {
 
@@ -221,42 +218,45 @@ void tugOfWar() {
             case Constants::MothershipExplosionMax:
                 Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
                 Sprites::drawExternalMask(mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
-                launchParticles(GameRotation::Landscape, mothership.getHeight() + (Constants::MothershipWidth / 2), mothership.getPosDisplay() + (Constants::MothershipHeight / 2));
+
+                launchParticles(gameRotation, mothership.getPosDisplay() + (Constants::MothershipHeight / 2), mothership.getHeight() + (Constants::MothershipWidth / 2));
                 break;
 
         }
 
         if (controlPlayer.getBulletActive())   Sprites::drawExternalMask(controlPlayer.getBulletX(), controlPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-        if (targetPlayer.getBulletActive())  Sprites::drawExternalMask(targetPlayer.getBulletX(), 64 - 7 - targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (targetPlayer.getBulletActive())    Sprites::drawExternalMask(targetPlayer.getBulletX(), targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
 
     }
     else {
 
+        DEBUG_PRINTLN(F("Target"));
+
         switch (mothership.getExplosionCounter()) {
 
             case 0:
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
                 break;
 
             case 1 ... Constants::MothershipExplosionMax / 2:
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 1, 1);
                 break;
 
             case (Constants::MothershipExplosionMax / 2) + 1 ... Constants::MothershipExplosionMax - 1:
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
                 break;
 
             case Constants::MothershipExplosionMax:
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
-                Sprites::drawExternalMask(120 - mothership.getHeight(), mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
-                launchParticles(GameRotation::Landscape, mothership.getHeight() + (Constants::MothershipWidth / 2), mothership.getPosDisplay() + (Constants::MothershipHeight / 2));
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Normal::Mothership, Images::Portrait::Normal::Mothership_Mask, Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6], Constants::Mothership_Frames[arduboy.getFrameCount(36) / 6]);
+                Sprites::drawExternalMask(120 - mothership.getHeight(), 64 - 14 - mothership.getPosDisplay(), Images::Portrait::Explosion, Images::Portrait::Explosion_Mask, 0, 0);
+                launchParticles(GameRotation::Landscape, mothership.getHeight() + (Constants::MothershipWidth / 2), 64 - 14 - mothership.getPosDisplay() + (Constants::MothershipHeight / 2));
                 break;
 
         }
-
-        if (controlPlayer.getBulletActive())  Sprites::drawExternalMask(120 - controlPlayer.getBulletX(), controlPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
-        if (targetPlayer.getBulletActive())  Sprites::drawExternalMask(120 - targetPlayer.getBulletX(), targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        
+        if (controlPlayer.getBulletActive())  Sprites::drawExternalMask(120 - controlPlayer.getBulletX(), 64 - 7 - controlPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
+        if (targetPlayer.getBulletActive())  Sprites::drawExternalMask(120 - targetPlayer.getBulletX(), 64 - 7 - targetPlayer.getBulletY(), Images::Portrait::Laser, Images::Portrait::Laser_Mask, 0, 0);
 
     }
 

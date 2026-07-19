@@ -7,7 +7,12 @@ void killGame() {
 
     controlState.setGameState(GameState::Title_Init);
     I2C::end();
-    role = I2C::Role::Controller;
+    #ifdef I2C_EXTRAS
+        role = I2C::Role::None;
+    #else
+        role = I2C::Role::Controller;
+    #endif
+    arduboy.pollButtons();
 
 }
 
@@ -30,14 +35,21 @@ void onRequest() {
     onRequest_Status = true;
 }
 
-void exitMenu() {
-    
-    if (arduboy.pressed(A_BUTTON)) {
-        DEBUG_PRINTLN("exitMenu() -> killGame()");
-        killGame(); 
-    }
+#ifdef I2C_EXTRAS
+    I2C::CallbackAction exitMenu() {
 
-}
+            role = I2C::Role::None;
+            
+            if (arduboy.pressed(B_BUTTON)) {
+                return I2C::CallbackAction::Exit;
+            }
+
+            return I2C::CallbackAction::Continue;
+
+    }
+#else
+    void exitMenu() {}
+#endif
 
 void waitForOther() {
     
@@ -50,13 +62,19 @@ void waitForOther() {
 
         case GameRotation::Portrait:
             #ifndef DEBUG_LANDSCAPE
-                Sprites::drawOverwrite(66, 5, Images::Portrait::WaitingForPlayer, 0);
+                Sprites::drawOverwrite(72, 5, Images::Portrait::WaitingForPlayer, 0);
+                #ifdef I2C_EXTRAS
+                    Sprites::drawOverwrite(56, 0, Images::Portrait::PressBToCancel, 0);
+                #endif
             #endif
             break;
 
         case GameRotation::Landscape:
             #ifndef DEBUG_PORTRAIT
-                Sprites::drawOverwrite(64 - 27, 5, Images::Landscape::WaitingForPlayer, 0);
+                Sprites::drawOverwrite(64 - 27, 4, Images::Landscape::WaitingForPlayer, 0);
+                #ifdef I2C_EXTRAS
+                    Sprites::drawOverwrite(64 - 32, 26, Images::Landscape::PressBToCancel, 0);
+                #endif
             #endif
             break;
 
@@ -77,13 +95,19 @@ void flipCable() {
 
         case GameRotation::Portrait:
             #ifndef DEBUG_LANDSCAPE        
-                Sprites::drawOverwrite(39, 12, Images::Portrait::FlipTheCable, 0);
+                Sprites::drawOverwrite(72, 12, Images::Portrait::FlipTheCable, 0);
+                #ifdef I2C_EXTRAS
+                    Sprites::drawOverwrite(56, 0, Images::Portrait::PressBToCancel, 0);
+                #endif
             #endif
             break;
 
         case GameRotation::Landscape:
             #ifndef DEBUG_PORTRAIT
-                Sprites::drawOverwrite(39, 12, Images::Landscape::FlipTheCable, 0);
+                Sprites::drawOverwrite(64 - 35, 4, Images::Landscape::FlipTheCable, 0);
+                #ifdef I2C_EXTRAS
+                    Sprites::drawOverwrite(64 - 32, 26, Images::Landscape::PressBToCancel, 0);
+                #endif
             #endif
             break;
 
@@ -103,61 +127,55 @@ void multi() {
 
     GameRotation gameRotation = controlState.getGameRotation();
 
-    switch (gameRotation) {
+    #ifdef I2C_EXTRAS
 
-        case GameRotation::Portrait:
+        I2C::CallbackOutcome result;
+        I2C::begin();
 
-            #ifndef DEBUG_LANDSCAPE
+        result = I2C::checkCableFlippedUntil(flipCable);
+        if (result == I2C::CallbackOutcome::Exited) {
+            killGame();
+            return;
+        }
 
-            I2C::begin();
-            I2C::checkCableFlipped(flipCable);
-            role = I2C::handshake(waitForOther, exitMenu);
+        role = I2C::handshakeUntil(waitForOther, exitMenu);
+        if (role == I2C::Role::None) {
+            killGame();
+            return;
+        }
+        else if (role == I2C::Role::Target) {
 
-            // if we're the target (slave), set up the receive and request callbacks
-            if (role == I2C::Role::Target) {
+            DEBUG_PRINTLN("I am the Target");
+            I2C::onReceive(onReceive);
+            I2C::onRequest(onRequest);
+            onReceive_Status = true;
 
-                DEBUG_PRINTLN("I am the Target");
-                I2C::onReceive(onReceive);
-                I2C::onRequest(onRequest);
-                onReceive_Status = true;
+        }
+        else {
+            DEBUG_PRINTLN("I am the Controller");
+        }
 
-            }
-            else {
-                DEBUG_PRINTLN("I am the Controller");
-            }
-
-            #endif
-
-            break;
-
-        case GameRotation::Landscape:
-
-            #ifndef DEBUG_PORTRAIT
-
-                I2C::begin();
-                I2C::checkCableFlipped(flipCable);
-                role = I2C::handshake(waitForOther, exitMenu);
-
-                // if we're the target (slave), set up the receive and request callbacks
-                if (role == I2C::Role::Target) {
-
-                    DEBUG_PRINTLN("I am the Target");
-                    I2C::onReceive(onReceive);
-                    I2C::onRequest(onRequest);
-                    onReceive_Status = true;
-
-                }
-                else {
-                    DEBUG_PRINTLN("I am the Controller");
-                }
-
-            #endif
-
-            break;
-            
-    }
-
+    #else
     
+        I2C::begin();
+        I2C::checkCableFlipped(flipCable);
+        I2C::handshake(waitForOther, exitMenu);
+
+        if (role == I2C::Role::Target) {
+
+            DEBUG_PRINTLN("I am the Target");
+            I2C::onReceive(onReceive);
+            I2C::onRequest(onRequest);
+            onReceive_Status = true;
+
+        }
+        else {
+            DEBUG_PRINTLN("I am the Controller");
+        }
+
+    #endif
+
+   
     switch (controlState.getGameMode()) {
     
         case GameMode::Single:
