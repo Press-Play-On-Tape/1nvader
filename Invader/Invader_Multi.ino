@@ -1,5 +1,5 @@
 #include <Arduboy2.h>
-
+#include "src/utils/Constants.h"
 
 void killGame() {
 
@@ -7,7 +7,7 @@ void killGame() {
 
     controlState.setGameState(GameState::Title_Init);
     I2C::end();
-    #ifdef I2C_EXTRAS
+    #ifdef I2C_USE_UNTILS
         role = I2C::Role::None;
     #else
         role = I2C::Role::Controller;
@@ -17,9 +17,11 @@ void killGame() {
 }
 
 void drawMessage(const __FlashStringHelper *message) {
+
     arduboy.clear();
     arduboy.print(message);
     arduboy.display();
+
 }
 
 void onReceive() {
@@ -35,7 +37,7 @@ void onRequest() {
     onRequest_Status = true;
 }
 
-#ifdef I2C_EXTRAS
+#ifdef I2C_USE_UNTILS
     I2C::CallbackAction exitMenu() {
 
             role = I2C::Role::None;
@@ -63,7 +65,7 @@ void waitForOther() {
         case GameRotation::Portrait:
             #ifndef DEBUG_LANDSCAPE
                 Sprites::drawOverwrite(72, 5, Images::Portrait::WaitingForPlayer, 0);
-                #ifdef I2C_EXTRAS
+                #ifdef I2C_USE_UNTILS
                     Sprites::drawOverwrite(56, 0, Images::Portrait::PressBToCancel, 0);
                 #endif
             #endif
@@ -72,7 +74,7 @@ void waitForOther() {
         case GameRotation::Landscape:
             #ifndef DEBUG_PORTRAIT
                 Sprites::drawOverwrite(64 - 27, 4, Images::Landscape::WaitingForPlayer, 0);
-                #ifdef I2C_EXTRAS
+                #ifdef I2C_USE_UNTILS
                     Sprites::drawOverwrite(64 - 32, 26, Images::Landscape::PressBToCancel, 0);
                 #endif
             #endif
@@ -96,7 +98,7 @@ void flipCable() {
         case GameRotation::Portrait:
             #ifndef DEBUG_LANDSCAPE        
                 Sprites::drawOverwrite(72, 12, Images::Portrait::FlipTheCable, 0);
-                #ifdef I2C_EXTRAS
+                #ifdef I2C_USE_UNTILS
                     Sprites::drawOverwrite(56, 0, Images::Portrait::PressBToCancel, 0);
                 #endif
             #endif
@@ -105,7 +107,7 @@ void flipCable() {
         case GameRotation::Landscape:
             #ifndef DEBUG_PORTRAIT
                 Sprites::drawOverwrite(64 - 35, 4, Images::Landscape::FlipTheCable, 0);
-                #ifdef I2C_EXTRAS
+                #ifdef I2C_USE_UNTILS
                     Sprites::drawOverwrite(64 - 32, 26, Images::Landscape::PressBToCancel, 0);
                 #endif
             #endif
@@ -127,12 +129,12 @@ void multi() {
 
     GameRotation gameRotation = controlState.getGameRotation();
 
-    #ifdef I2C_EXTRAS
+    #ifdef I2C_USE_UNTILS
 
         I2C::CallbackOutcome result;
         I2C::begin();
 
-        result = I2C::checkCableFlippedUntil(flipCable);
+        result = I2C::checkCableFlippedUntil(flipCable, exitMenu);
         if (result == I2C::CallbackOutcome::Exited) {
             killGame();
             return;
@@ -158,7 +160,7 @@ void multi() {
     #else
     
         I2C::begin();
-        I2C::checkCableFlipped(flipCable);
+        I2C::checkCableFlipped(flipCable, exitMenu);
         I2C::handshake(waitForOther, exitMenu);
 
         if (role == I2C::Role::Target) {

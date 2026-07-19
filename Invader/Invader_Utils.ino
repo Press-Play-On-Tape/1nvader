@@ -166,12 +166,13 @@ void renderSceneryPortrait(bool renderStars) {
         if (arduboy.isFrameCount(2, 0)) {
 
             arduboy.drawPixel(36, 4, WHITE);
-            arduboy.drawPixel(61, 25, WHITE);
+            arduboy.drawPixel(60, 25, WHITE);
+            arduboy.drawPixel(116, 12, WHITE);
 
         }
         else {
 
-            arduboy.drawPixel(45, 52, WHITE);
+            arduboy.drawPixel(44, 52, WHITE);
             arduboy.drawPixel(106, 54, WHITE);
             arduboy.drawPixel(96, 24, WHITE);
 

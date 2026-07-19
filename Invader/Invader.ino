@@ -1,11 +1,16 @@
 #include "src/utils/Arduboy2Ext.h"
+#include "src/utils/Constants.h"
+
 #define I2C_BUFFER_CAPACITY 46
-// #define I2C_FREQUENCY 50000
 #define I2C_IMPLEMENTATION
-#include "src/utils/ArduboyI2C.h"
+#ifdef I2C_USE_UNTILS
+    #include "src/utils/ArduboyI2C.h"
+#else
+    #include <ArduboyI2C.h>
+#endif
+
 #include "src/entities/Entities.h"
 #include "src/images/Images.h"
-#include "src/utils/Constants.h"
 #include "src/utils/EEPROM_Utils.h"
 #include "src/utils/Structs.h"
 #include "src/sounds/Sounds.h"

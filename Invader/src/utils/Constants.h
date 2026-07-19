@@ -12,7 +12,7 @@
 #define _DEBUG_LANDSCAPE
 #define DEBUG_BREAK    asm volatile("break\n");
 #define SOUNDS
-#define I2C_EXTRAS
+#define I2C_USE_UNTILS
 
 // ---------------------------------------
 

@@ -63,7 +63,7 @@ void gameOver() {
 
             I2C::read(I2C::targetAddress, targetState);
             readAddrNackError = 10;
-            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Async);
+            I2C::write(I2C::targetAddress, controlState, I2C::Mode::Sync);
 
         }  
         else {
