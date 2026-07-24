@@ -16,14 +16,6 @@ void killGame() {
 
 }
 
-void drawMessage(const __FlashStringHelper *message) {
-
-    arduboy.clear();
-    arduboy.print(message);
-    arduboy.display();
-
-}
-
 void onReceive() {
 
     targetState = *reinterpret_cast<const State *>(I2C::getBuffer());
@@ -40,8 +32,6 @@ void onRequest() {
 #ifdef I2C_USE_UNTILS
     I2C::CallbackAction exitMenu() {
 
-            role = I2C::Role::None;
-            
             if (arduboy.pressed(B_BUTTON)) {
                 return I2C::CallbackAction::Exit;
             }
@@ -131,16 +121,16 @@ void multi() {
 
     #ifdef I2C_USE_UNTILS
 
-        I2C::CallbackOutcome result;
         I2C::begin();
+        I2C::CallbackOutcome result = I2C::checkCableFlippedUntil(flipCable, exitMenu);
 
-        result = I2C::checkCableFlippedUntil(flipCable, exitMenu);
         if (result == I2C::CallbackOutcome::Exited) {
             killGame();
             return;
         }
 
         role = I2C::handshakeUntil(waitForOther, exitMenu);
+
         if (role == I2C::Role::None) {
             killGame();
             return;

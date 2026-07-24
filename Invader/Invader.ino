@@ -1,11 +1,13 @@
 #include "src/utils/Arduboy2Ext.h"
 #include "src/utils/Constants.h"
 
-#define I2C_BUFFER_CAPACITY 46
-#define I2C_IMPLEMENTATION
 #ifdef I2C_USE_UNTILS
+    #define I2C_BUFFER_CAPACITY 46
+    #define I2C_IMPLEMENTATION
     #include "src/utils/ArduboyI2C.h"
 #else
+    #define I2C_BUFFER_CAPACITY 46
+    #define I2C_IMPLEMENTATION
     #include <ArduboyI2C.h>
 #endif
 

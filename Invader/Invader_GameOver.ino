@@ -118,6 +118,7 @@ void gameOver() {
 
     if (arduboy.justPressed(A_BUTTON)) { 
         
+        killGame();
         controlState.setGameState(GameState::Title_Init);
 
     }
